@@ -30,9 +30,9 @@ LIBFT = $(LIBFT_DIR)/libft.a
 
 OBJS		= $(SRCS:.c=.o)
 
-all:	makelibft $(NAME)
+all:	$(LIBFT) $(NAME)
 
-makelibft $(LIBFT): $(LIBFT_FILES) 
+$(LIBFT): $(LIBFT_FILES) 
 	$(MAKE) -C libft
 
 $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
