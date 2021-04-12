@@ -1,17 +1,22 @@
 #include <libft_malloc.h>
 
-void free(void *ptr)
+int add(int a, int b)
 {
-	(void)ptr;
-	return;
+	return a + b;
 }
 
-void *malloc(size_t size)
-{
-	return (void*)size;
-}
+// void free(void *ptr)
+// {
+// 	(void)ptr;
+// 	return;
+// }
 
-void *realloc(void *ptr, size_t size)
-{
-	return (char*)ptr + size;
-}
+// void *malloc(size_t size)
+// {
+// 	return (void*)size;
+// }
+
+// void *realloc(void *ptr, size_t size)
+// {
+// 	return (char*)ptr + size;
+// }

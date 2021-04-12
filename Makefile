@@ -39,8 +39,9 @@ $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
 	$(CC) $(FLAGS) $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT) -shared -o $(NAME)
 	ln -sf $(NAME) libft_malloc.so
 
-# main:
-# 	$(CC) $(FLAGS) main.cpp $(NAME) -o main
+main:
+	@$(CC) $(FLAGS) -I./includes main.c $(NAME)
+	@LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
 	$(CC) $(FLAGS) -c -fPIC $(addprefix -I, $(INC_DIR)) $< -o $@
