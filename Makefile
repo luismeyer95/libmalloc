@@ -15,7 +15,7 @@ LIBFT		=	libft
 
 SRCS_DIR	=	srcs
 OBJS_DIR  	=	objs
-INC_DIR		=	includes
+INC_DIR		=	includes libft
 
 SRCS	=	libft_malloc.c
 
@@ -36,11 +36,11 @@ $(LIBFT): $(LIBFT_FILES)
 	$(MAKE) -C libft
 
 $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
-	$(CC) $(FLAGS) $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT) -shared -o $(NAME)
+	$(CC) $(FLAGS) $(addprefix $(OBJS_DIR)/, $(OBJS)) -Wl,--whole-archive $(LIBFT) -Wl,--no-whole-archive -shared -o $(NAME)
 	ln -sf $(NAME) libft_malloc.so
 
 main: $(NAME)
-	$(CC) $(FLAGS) -I./includes main.c $(NAME)
+	$(CC) $(FLAGS) $(addprefix -I, $(INC_DIR)) main.c $(NAME)
 	LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
