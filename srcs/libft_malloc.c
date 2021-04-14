@@ -22,12 +22,9 @@ void *global_start = NULL;
 void *create_heap(size_t heap_size)
 {
 	void *map = NULL;
-	map = mmap(NULL, heap_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS, -1, 0);
-	// if (map == NULL)
-	// {
-	// 	ft_putstr_fd("Fatal error: mmap returned NULL\n", 2);
-	// 	exit(1);
-	// }
+	map = mmap(NULL, heap_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	if (map == MAP_FAILED)
+		return NULL;
 	t_heap *heap = map;
 	if (heap_size > small_heap_size())
 		heap->group = LARGE;
@@ -38,7 +35,7 @@ void *create_heap(size_t heap_size)
 	heap->next = NULL;
 	heap->prev = NULL;
 	heap->size = heap_size - SIZEOF_T_HEAP;
-	t_block *whole_block = HEAP_SHIFT(heap);
+	t_block *whole_block = SHIFT(heap, SIZEOF_T_HEAP);
 	whole_block->allocated = false;
 	whole_block->size = heap_size - SIZEOF_T_BLOCK - SIZEOF_T_HEAP;
 	whole_block->prev = NULL;
@@ -73,7 +70,7 @@ void *create_heap_from_alloc_size(size_t alloc_size)
 	return heap;
 }
 
-void link(t_node *n1, t_node *n2)
+void link_nodes(t_node *n1, t_node *n2)
 {
 	if (n1)
 		n1->next = n2;
@@ -84,8 +81,8 @@ void link(t_node *n1, t_node *n2)
 void insert_after_node(t_node *node, t_node *new)
 {
 	t_node *next_node = node->next;
-	link(node, new);
-	link(new, next_node);
+	link_nodes(node, new);
+	link_nodes(new, next_node);
 }
 
 void *allocate_and_split(t_block *block, size_t aligned_alloc_size)
@@ -96,11 +93,7 @@ void *allocate_and_split(t_block *block, size_t aligned_alloc_size)
 		t_block *free_block = SHIFT(block, SIZEOF_T_BLOCK + aligned_alloc_size);
 		free_block->allocated = false;
 		free_block->size = remaining_space - SIZEOF_T_BLOCK;
-
-		insert_after_node(block, free_block);
-		// t_block *next_block = block->next;
-		// link(block, free_block);
-		// link(free_block, next_block);
+		insert_after_node((void*)block, (void*)free_block);
 	}
 	block->allocated = true;
 	block->size = aligned_alloc_size;
@@ -110,7 +103,7 @@ void *allocate_and_split(t_block *block, size_t aligned_alloc_size)
 void *find_fit(size_t alloc_size, t_heap *heap)
 {
 	size_t aligned_alloc_size = ALIGN(alloc_size);
-	t_block *block = HEAP_SHIFT(heap);
+	t_block *block = SHIFT(heap, SIZEOF_T_HEAP);
 	while (block)
 	{
 		if (block->size >= aligned_alloc_size && block->allocated == false)
@@ -120,42 +113,94 @@ void *find_fit(size_t alloc_size, t_heap *heap)
 	return (NULL);
 }
 
-void *malloc_init(size_t alloc_size)
+void insert_sort_heap(t_heap *new_heap)
 {
-	global_start = create_heap_from_alloc_size(alloc_size);
-	return find_fit(alloc_size, global_start);
+	if (!global_start)
+		global_start = new_heap;
+	else
+	{
+		if (new_heap < global_start)
+		{
+			void *old_start = global_start;
+			global_start = new_heap;
+			link_nodes(global_start, old_start);
+			return;
+		}
+		t_heap *heap_it = global_start;
+		while (heap_it->next)
+		{
+			if (new_heap < heap_it->next)
+			{
+				insert_after_node(heap_it, new_heap);
+				return;
+			}
+			heap_it = heap_it->next;
+		}
+		return insert_after_node(heap_it, new_heap);
+	}
 }
-
-
 
 void *ft_malloc(size_t size)
 {
 	if (!size)
 		return NULL;
-	if (global_start)
+	t_heap *heap = global_start;
+	t_group alloc_heap_group = get_alloc_heap_group(size);
+	while (heap)
 	{
-		t_heap *heap = global_start;
-		t_group alloc_heap_group = get_alloc_heap_group(size);
-		while (heap)
+		if (heap->group == alloc_heap_group)
 		{
-			if (heap->group == alloc_heap_group)
-			{
-				void *alloc = find_fit(size, heap);
-				if (alloc)
-					return alloc;
-			}
-			heap = heap->next;
+			void *alloc = find_fit(size, heap);
+			if (alloc)
+				return alloc;
 		}
-		t_heap *new_heap = create_heap_from_alloc_size(size);
-		// pushing new heaps at index 1.. weird but fine i guess
-		insert_after_node(global_start, new_heap);
-		
+		heap = heap->next;
 	}
-	else
-		return malloc_init(size);
-	return NULL;
+	t_heap *new_heap = create_heap_from_alloc_size(size);
+	if (!new_heap)
+		return NULL;
+	// pushing new heaps at the front
+	// void *old_start = global_start;
+	// global_start = new_heap;
+	// link_nodes(global_start, old_start);
+	insert_sort_heap(new_heap);
+	return find_fit(size, new_heap);
 }
 
+void node_foreach(t_node *lst, void (*f)(void *node))
+{
+	if (!lst || !f)
+		return;
+	while (lst)
+	{
+		f(lst);
+		lst = lst->next;
+	}
+}
+
+void show_block(void *node)
+{
+	
+}
+
+void show_heap(void *node)
+{
+	t_heap *heap = node;
+	if (heap->group == TINY)
+		ft_putstr_fd("TINY", 1);
+	else if (heap->group == SMALL)
+		ft_putstr_fd("SMALL", 1);
+	else
+		ft_putstr_fd("LARGE", 1);
+	ft_putstr_fd(" : ", 1);
+	t_block *block_start = SHIFT(heap, SIZEOF_T_HEAP);
+	node_foreach(block_start, show_block);
+}
+
+void show_alloc_mem()
+{
+	node_foreach(global_start, show_heap);
+}
 
 void ft_free(void *ptr)
 {

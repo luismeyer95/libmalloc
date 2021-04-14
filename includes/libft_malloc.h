@@ -19,11 +19,11 @@ typedef	enum s_group
 	TINY, SMALL, LARGE
 }		t_group;
 
-typedef	struct	s_node
+typedef	struct		s_node
 {
-	struct s_heap	*prev;
-	struct s_heap	*next;
-}				t_node;
+	struct s_node	*prev;
+	struct s_node	*next;
+}					t_node;
 
 typedef	struct	s_heap
 {
@@ -53,7 +53,7 @@ typedef	struct s_block
 # define HEAP_SHIFT(x) ((char*)(x) + SIZEOF_T_HEAP)
 # define BLOCK_SHIFT(x) ((char*)(x) + SIZEOF_T_BLOCK)
 
-# define SHIFT(x, size) ((char*)(x) + (size)) 
+# define SHIFT(x, size) ((void*)((char*)(x) + (size)))
 
 // # define TINY_HEAP_SIZE 
 
@@ -64,5 +64,7 @@ int align(int a);
 void ft_free(void *ptr);
 void *ft_malloc(size_t size);
 void *ft_realloc(void *ptr, size_t size);
+
+void show_alloc_mem();
 
 #endif
