@@ -13,17 +13,24 @@ int main()
 	// printf("t_heap size = %zu\n", SIZEOF_T_HEAP);
 	// printf("tiny heap total size = %zu\n", tiny_heap_size());
 	// printf("small heap total size = %zu\n", small_heap_size());
-	srand(time(NULL));
 
-	char *str;
-	for (int i = 0; i < 100; ++i)
-	{
-		str = ft_malloc(20 + (rand() % 256));
-		if (!str)
-			perror("error: ");
-	}
-	strcpy(str, "Hello world!\n");
-	ft_putstr_fd(str, 1);
 
-	
+	// srand(time(NULL));
+
+	// char *str;
+	// for (int i = 0; i < 100; ++i)
+	// {
+	// 	str = ft_malloc(20 + (rand() % 256));
+	// 	if (!str)
+	// 		perror("error: ");
+	// }
+	// strcpy(str, "Hello world!\n");
+	// ft_putstr_fd(str, 1);
+
+	void *test = ft_malloc(5000);
+	test = ft_malloc(100);
+	test = ft_malloc(113);
+	test = ft_malloc(4000);
+	(void)test;
+	show_alloc_mem();
 }

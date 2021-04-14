@@ -19,22 +19,17 @@ size_t small_heap_size()
 
 void *global_start = NULL;
 
-void *create_heap(size_t heap_size)
+void *create_heap(t_group heap_group, size_t heap_size)
 {
 	void *map = NULL;
 	map = mmap(NULL, heap_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	if (map == MAP_FAILED)
 		return NULL;
 	t_heap *heap = map;
-	if (heap_size > small_heap_size())
-		heap->group = LARGE;
-	else if (heap_size > tiny_heap_size())
-		heap->group = SMALL;
-	else
-		heap->group = TINY;
-	heap->next = NULL;
-	heap->prev = NULL;
+	heap->group = heap_group;
 	heap->size = heap_size - SIZEOF_T_HEAP;
+	heap->prev = NULL;
+	heap->next = NULL;
 	t_block *whole_block = SHIFT(heap, SIZEOF_T_HEAP);
 	whole_block->allocated = false;
 	whole_block->size = heap_size - SIZEOF_T_BLOCK - SIZEOF_T_HEAP;
@@ -59,13 +54,13 @@ void *create_heap_from_alloc_size(size_t alloc_size)
 	size_t aligned_alloc_size = ALIGN(alloc_size);
 	t_group heap_group = get_alloc_heap_group(aligned_alloc_size);
 	if (heap_group == TINY)
-		heap = create_heap(tiny_heap_size());
+		heap = create_heap(TINY, tiny_heap_size());
 	else if (heap_group == SMALL)
-		heap = create_heap(small_heap_size());
+		heap = create_heap(SMALL, small_heap_size());
 	else
 	{
 		size_t new_heap_size = align_on(alloc_size, getpagesize());
-		heap = create_heap(new_heap_size);
+		heap = create_heap(LARGE, new_heap_size);
 	}
 	return heap;
 }
@@ -119,24 +114,20 @@ void insert_sort_heap(t_heap *new_heap)
 		global_start = new_heap;
 	else
 	{
-		if (new_heap < global_start)
+		if (new_heap < (t_heap*)global_start)
 		{
 			void *old_start = global_start;
 			global_start = new_heap;
-			link_nodes(global_start, old_start);
-			return;
+			return link_nodes(global_start, old_start);
 		}
 		t_heap *heap_it = global_start;
 		while (heap_it->next)
 		{
 			if (new_heap < heap_it->next)
-			{
-				insert_after_node(heap_it, new_heap);
-				return;
-			}
+				return insert_after_node((void*)heap_it, (void*)new_heap);
 			heap_it = heap_it->next;
 		}
-		return insert_after_node(heap_it, new_heap);
+		return insert_after_node((void*)heap_it, (void*)new_heap);
 	}
 }
 
@@ -159,10 +150,6 @@ void *ft_malloc(size_t size)
 	t_heap *new_heap = create_heap_from_alloc_size(size);
 	if (!new_heap)
 		return NULL;
-	// pushing new heaps at the front
-	// void *old_start = global_start;
-	// global_start = new_heap;
-	// link_nodes(global_start, old_start);
 	insert_sort_heap(new_heap);
 	return find_fit(size, new_heap);
 }
@@ -180,7 +167,14 @@ void node_foreach(t_node *lst, void (*f)(void *node))
 
 void show_block(void *node)
 {
-	
+	t_block *block = node;
+
+	char *bytesize = ft_itoa(block->size);
+
+	ft_putstr_fd(bytesize, 1);
+	ft_putstr_fd(" octets\n", 1);
+
+	free(bytesize);
 }
 
 void show_heap(void *node)
@@ -192,9 +186,9 @@ void show_heap(void *node)
 		ft_putstr_fd("SMALL", 1);
 	else
 		ft_putstr_fd("LARGE", 1);
-	ft_putstr_fd(" : ", 1);
+	ft_putstr_fd(" : \n", 1);
 	t_block *block_start = SHIFT(heap, SIZEOF_T_HEAP);
-	node_foreach(block_start, show_block);
+	node_foreach((void*)block_start, show_block);
 }
 
 void show_alloc_mem()
