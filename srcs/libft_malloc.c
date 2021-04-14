@@ -1,8 +1,22 @@
 #include <libft_malloc.h>
 
-int add(int a, int b)
+int align(int a)
 {
-	return a + b;
+	return ALIGN(a);
+}
+
+size_t tiny_heap_size()
+{
+	size_t total = SIZEOF_T_HEAP + 100 * (TINY_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK);
+	int pagesize = getpagesize();
+	return (total + pagesize - 1) & ~(pagesize - 1);
+}
+
+size_t small_heap_size()
+{
+	size_t total = SIZEOF_T_HEAP + 100 * (SMALL_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK);
+	int pagesize = getpagesize();
+	return (total + pagesize - 1) & ~(pagesize - 1);
 }
 
 // void free(void *ptr)
