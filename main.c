@@ -28,7 +28,8 @@ int main()
 	// ft_putstr_fd(str, 1);
 
 	void *test;
-	test = ft_malloc(112);
+	for (int i = 0; i < 103; ++i)
+		test = ft_malloc(128);
 
 	ft_free(test);
 

@@ -133,22 +133,30 @@ void insert_sort_heap(t_heap *new_heap)
 	}
 }
 
-void *ft_malloc(size_t size)
+void *search_available_heaps(size_t alloc_size, t_group alloc_heap_group)
 {
-	if (!size)
-		return NULL;
 	t_heap *heap = global_start;
-	t_group alloc_heap_group = get_alloc_heap_group(size);
 	while (heap)
 	{
 		if (heap->group == alloc_heap_group)
 		{
-			void *alloc = find_fit(size, heap);
+			void *alloc = find_fit(alloc_size, heap);
 			if (alloc)
 				return alloc;
 		}
 		heap = heap->next;
 	}
+	return NULL;
+}
+
+void *ft_malloc(size_t size)
+{
+	if (!size)
+		return NULL;
+	t_group alloc_heap_group = get_alloc_heap_group(size);
+	void *res = search_available_heaps(size, alloc_heap_group);
+	if (res)
+		return res;
 	t_heap *new_heap = create_heap_from_alloc_size(size);
 	if (!new_heap)
 		return NULL;
@@ -232,7 +240,31 @@ void show_alloc_mem()
 
 ////////////////////////////////////
 
+t_heap *find_heap_of_block(t_block *block)
+{
+	if (!global_start || (void*)block < global_start)
+		return NULL;
+	while (block->prev)
+		block = block->prev;
+	return SHIFT(block, -SIZEOF_T_HEAP);
+}
 
+bool can_del_heap(t_group heap_group)
+{
+	if (heap_group == LARGE)
+		return true;
+	t_heap *it = global_start;
+	size_t count = 0;
+	while (it)
+	{
+		if (it->group == heap_group)
+			++count;
+		if (count == 2)
+			return true;
+		it = it->next;
+	}
+	return false;
+}
 
 bool can_coalesce(t_block *block)
 {
@@ -257,16 +289,24 @@ void ft_free(void *ptr)
 	if (!ptr)
 		return;
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
+	t_heap *heap = find_heap_of_block(block);
 	block->allocated = false;
-	// block->size = 0;
 	if (can_coalesce(block->prev) && can_coalesce(block->next))
 		coalesce_free_blocks(block->prev, block->next->next);
 	else if (can_coalesce(block->prev))
 		coalesce_free_blocks(block->prev, block->next);
 	else if (can_coalesce(block->next))
 		coalesce_free_blocks(block, block->next->next);
+	if (can_del_heap(heap->group))
+	{
+		link_nodes((void*)heap->prev, (void*)heap->next);
+		if (global_start == (void*)heap)
+			global_start = heap->next;
+		munmap(heap, SIZEOF_T_HEAP + heap->size);
+	}
 }
 
+//////////////////////////////////////////////////////////
 
 void *ft_realloc(void *ptr, size_t size)
 {
@@ -283,9 +323,7 @@ void *ft_realloc(void *ptr, size_t size)
 	if (block->size >= size)
 		return ptr;
 	uint8_t *new_malloc = ft_malloc(size);
-	size_t lencopy = size > block->size ? size - block->size : block->size - size;
-	for (size_t i = 0; i < lencopy; ++i)
-		new_malloc[i] = ((uint8_t*)ptr)[i];
+	ft_memcpy(new_malloc, ptr, block->size);
 	ft_free(ptr);
 	return new_malloc;
 }
