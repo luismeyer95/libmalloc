@@ -41,32 +41,29 @@ typedef	struct s_block
 	bool 			allocated;
 }		t_block;
 
-#define ALIGNMENT 16
-#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
+# define ALIGNMENT 16
+# define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
-#define SIZEOF_T_HEAP ALIGN(sizeof(t_heap))
-#define SIZEOF_T_BLOCK ALIGN(sizeof(t_block))
+# define SIZEOF_T_HEAP ALIGN(sizeof(t_heap))
+# define SIZEOF_T_BLOCK ALIGN(sizeof(t_block))
 
 # define TINY_MAX_ALLOC_SIZE 128
 # define SMALL_MAX_ALLOC_SIZE 4096
 
-# define HEAP_SHIFT(x) ((char*)(x) + SIZEOF_T_HEAP)
-# define BLOCK_SHIFT(x) ((char*)(x) + SIZEOF_T_BLOCK)
-
 # define SHIFT(x, size) ((void*)((char*)(x) + (size)))
-
 # define ABS(x) ((x) > 0 ? (x) : -(x))
 
-// # define TINY_HEAP_SIZE 
+# define TINY_HEAP_SIZE (align_on(SIZEOF_T_HEAP + \
+	100 * (TINY_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK), getpagesize()))
 
-size_t tiny_heap_size();
-size_t small_heap_size();
+# define SMALL_HEAP_SIZE (align_on(SIZEOF_T_HEAP + \
+	100 * (SMALL_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK), getpagesize()))
 
-int align(int a);
-void ft_free(void *ptr);
-void *ft_malloc(size_t size);
-void *ft_realloc(void *ptr, size_t size);
+// int		align(int a);
+void	ft_free(void *ptr);
+void	*ft_malloc(size_t size);
+void	*ft_realloc(void *ptr, size_t size);
+void	show_alloc_mem();
 
-void show_alloc_mem();
 
 #endif

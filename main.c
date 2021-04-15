@@ -15,25 +15,15 @@ int main()
 	// printf("small heap total size = %zu\n", small_heap_size());
 
 
-	// srand(time(NULL));
+	srand(time(NULL));
 
-	// char *str;
-	// for (int i = 0; i < 100; ++i)
-	// {
-	// 	str = ft_malloc(20 + (rand() % 256));
-	// 	if (!str)
-	// 		perror("error: ");
-	// }
-	// strcpy(str, "Hello world!\n");
-	// ft_putstr_fd(str, 1);
-
-	void *test;
-	for (int i = 0; i < 103; ++i)
-		test = ft_malloc(128);
-
-	ft_free(test);
-
-	show_alloc_mem();
-
+	char *str;
+	for (int i = 0; i < 100; ++i)
+	{
+		str = ft_malloc(20 + (rand() % 5000));
+		show_alloc_mem();
+		ft_putstr_fd("------------------\n", 1);
+		ft_free(str);
+	}
 
 }
