@@ -55,6 +55,8 @@ typedef	struct s_block
 
 # define SHIFT(x, size) ((void*)((char*)(x) + (size)))
 
+# define ABS(x) ((x) > 0 ? (x) : -(x))
+
 // # define TINY_HEAP_SIZE 
 
 size_t tiny_heap_size();

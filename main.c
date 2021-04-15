@@ -27,10 +27,12 @@ int main()
 	// strcpy(str, "Hello world!\n");
 	// ft_putstr_fd(str, 1);
 
-	void *test = ft_malloc(5000);
-	test = ft_malloc(100);
-	test = ft_malloc(113);
-	test = ft_malloc(4000);
-	(void)test;
+	void *test;
+	test = ft_malloc(112);
+
+	ft_free(test);
+
 	show_alloc_mem();
+
+
 }

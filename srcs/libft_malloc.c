@@ -17,6 +17,8 @@ size_t small_heap_size()
 	return align_on(total, getpagesize());
 }
 
+
+
 void *global_start = NULL;
 
 void *create_heap(t_group heap_group, size_t heap_size)
@@ -154,9 +156,29 @@ void *ft_malloc(size_t size)
 	return find_fit(size, new_heap);
 }
 
-void node_foreach(t_node *lst, void (*f)(void *node))
+////////////////////////////////////////////////
+
+static inline void print_str(char *str)
 {
-	if (!lst || !f)
+	ft_putstr_fd(str, 1);
+}
+
+static inline void	print_base(uintptr_t nb, unsigned int base)
+{
+	static char basestr[17] = "0123456789abcdef";
+
+	if (nb < base)
+		ft_putchar_fd(basestr[nb], 1);
+	else
+	{
+		print_base(nb / base, base);
+		ft_putchar_fd(basestr[nb % base], 1);
+	}
+}
+
+static inline void foreach_node(t_node *lst, void (*f)(void *node))
+{
+	if (!f)
 		return;
 	while (lst)
 	{
@@ -165,45 +187,105 @@ void node_foreach(t_node *lst, void (*f)(void *node))
 	}
 }
 
-void show_block(void *node)
+
+static inline void show_block(void *node)
 {
 	t_block *block = node;
 
-	char *bytesize = ft_itoa(block->size);
+	// if (!block->allocated)
+	// 	return;
 
-	ft_putstr_fd(bytesize, 1);
-	ft_putstr_fd(" octets\n", 1);
-
-	free(bytesize);
+	print_str("0x");
+	print_base((uintptr_t)SHIFT(block, SIZEOF_T_BLOCK), 16);
+	print_str(" - 0x");
+	print_base((uintptr_t)SHIFT(block, SIZEOF_T_BLOCK + block->size), 16);
+	print_str(" : ");
+	print_base(block->size, 10);
+	print_str(" octets");
+	if (block->allocated)
+		print_str("\n");
+	else
+		print_str(" FREE\n");
 }
 
-void show_heap(void *node)
+static inline void show_heap(void *node)
 {
 	t_heap *heap = node;
 	if (heap->group == TINY)
-		ft_putstr_fd("TINY", 1);
+		print_str("TINY  : 0x");
 	else if (heap->group == SMALL)
-		ft_putstr_fd("SMALL", 1);
+		print_str("SMALL : 0x");
 	else
-		ft_putstr_fd("LARGE", 1);
-	ft_putstr_fd(" : \n", 1);
+		print_str("LARGE : 0x");
+
+	print_base((uintptr_t)heap, 16);
+	print_str("\n");
+
 	t_block *block_start = SHIFT(heap, SIZEOF_T_HEAP);
-	node_foreach((void*)block_start, show_block);
+	foreach_node((void*)block_start, show_block);
 }
 
 void show_alloc_mem()
 {
-	node_foreach(global_start, show_heap);
+	foreach_node(global_start, show_heap);
+}
+
+////////////////////////////////////
+
+
+
+bool can_coalesce(t_block *block)
+{
+	return (block && !block->allocated);
+}
+
+void coalesce_free_blocks(t_block *beg, t_block *end)
+{
+	t_block *it = beg;
+	size_t coalesced_size = 0;
+	while (it != end)
+	{
+		coalesced_size += it->size + SIZEOF_T_BLOCK;
+		it = it->next;
+	}
+	beg->size = coalesced_size - SIZEOF_T_BLOCK;
+	link_nodes((void*)beg, (void*)end);
 }
 
 void ft_free(void *ptr)
 {
-	(void)ptr;
-	return;
+	if (!ptr)
+		return;
+	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
+	block->allocated = false;
+	// block->size = 0;
+	if (can_coalesce(block->prev) && can_coalesce(block->next))
+		coalesce_free_blocks(block->prev, block->next->next);
+	else if (can_coalesce(block->prev))
+		coalesce_free_blocks(block->prev, block->next);
+	else if (can_coalesce(block->next))
+		coalesce_free_blocks(block, block->next->next);
 }
 
 
 void *ft_realloc(void *ptr, size_t size)
 {
-	return (char*)ptr + size;
+	if (!ptr)
+		return ft_malloc(size);
+	else if (!size)
+	{
+		ft_free(ptr);
+		return NULL;
+	}
+	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
+	if (!block->allocated)
+		return NULL;
+	if (block->size >= size)
+		return ptr;
+	uint8_t *new_malloc = ft_malloc(size);
+	size_t lencopy = size > block->size ? size - block->size : block->size - size;
+	for (size_t i = 0; i < lencopy; ++i)
+		new_malloc[i] = ((uint8_t*)ptr)[i];
+	ft_free(ptr);
+	return new_malloc;
 }
