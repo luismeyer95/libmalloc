@@ -17,7 +17,10 @@ SRCS_DIR	=	srcs
 OBJS_DIR  	=	objs
 INC_DIR		=	includes libft
 
-SRCS	=	libft_malloc.c
+SRCS	=	malloc.c \
+			realloc.c \
+			free.c \
+			show_alloc_mem.c
 
 INCLUDE	=	$(addprefix $(INC_DIR)/, \
 				libft_malloc.h \

@@ -59,7 +59,9 @@ typedef	struct s_block
 # define SMALL_HEAP_SIZE (align_on(SIZEOF_T_HEAP + \
 	100 * (SMALL_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK), getpagesize()))
 
-// int		align(int a);
+void	link_nodes(t_node *n1, t_node *n2);
+void	insert_after_node(t_node *node, t_node *new);
+
 void	ft_free(void *ptr);
 void	*ft_malloc(size_t size);
 void	*ft_realloc(void *ptr, size_t size);
