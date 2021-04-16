@@ -42,11 +42,12 @@ typedef	struct		s_block
 	bool 			allocated;
 }					t_block;
 
-# define ALIGNMENT 16
-# define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
+# ifndef ALIGNMENT
+#  define ALIGNMENT 16
+# endif
 
-# define SIZEOF_T_HEAP ALIGN(sizeof(t_heap))
-# define SIZEOF_T_BLOCK ALIGN(sizeof(t_block))
+# define SIZEOF_T_HEAP align(sizeof(t_heap))
+# define SIZEOF_T_BLOCK align(sizeof(t_block))
 
 # define TINY_MAX_ALLOC_SIZE 128
 # define SMALL_MAX_ALLOC_SIZE 4096
@@ -63,15 +64,19 @@ typedef	struct		s_block
 extern void 			*global_start;
 extern pthread_mutex_t	malloc_mtx;
 
+size_t					align(size_t nb);
 size_t					align_on(size_t nb, size_t alignment);
 void					link_nodes(t_node *n1, t_node *n2);
+void					print_base(uintptr_t nb, unsigned int base);
+
 void					insert_after_node(t_node *node, t_node *new);
 void					*malloc_impl(size_t size);
 void					free_impl(void *ptr);
+void					show_alloc_mem_impl();
 
-void					ft_free(void *ptr);
-void					*ft_malloc(size_t size);
-void					*ft_realloc(void *ptr, size_t size);
+void					free(void *ptr);
+void					*malloc(size_t size);
+void					*realloc(void *ptr, size_t size);
 void					show_alloc_mem();
 
 

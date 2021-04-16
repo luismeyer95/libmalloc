@@ -2,9 +2,11 @@ CC			=	clang-6.0
 # CC			=	gcc
 
 FWARN		=	-Wall -Wextra -Werror
-FDEBUG		=	-g
-FOPTI		=	-O3
+FDEBUG		=	-g3
+# FOPTI		=	-O3
 FLAGS		=	$(FWARN) $(FDEBUG) $(FOPTI)
+
+ALIGNMENT	=	16
 
 ifeq ($(HOSTTYPE),)
 	HOSTTYPE := $(shell uname -m)_$(shell uname -s)
@@ -21,7 +23,8 @@ SRCS	=	malloc.c \
 			realloc.c \
 			free.c \
 			show_alloc_mem.c \
-			globals.c
+			globals.c \
+			helpers.c
 
 INCLUDE	=	$(addprefix $(INC_DIR)/, \
 				libft_malloc.h \
@@ -44,11 +47,11 @@ $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
 	ln -sf $(NAME) libft_malloc.so
 
 main: $(NAME)
-	$(CC) $(FLAGS) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
+	$(CC) $(FLAGS) -D ALIGNMENT=$(ALIGNMENT) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
 	LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
-	$(CC) $(FLAGS) -c -fPIC $(addprefix -I, $(INC_DIR)) $< -o $@
+	$(CC) $(FLAGS) -D ALIGNMENT=$(ALIGNMENT) -c -fPIC $(addprefix -I, $(INC_DIR)) $< -o $@
 
 clean:
 	rm -f $(addprefix $(OBJS_DIR)/, $(OBJS))

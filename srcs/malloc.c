@@ -1,14 +1,11 @@
 #include <libft_malloc.h>
 
-inline size_t align_on(size_t nb, size_t alignment)
-{
-	return (nb + alignment - 1) & ~(alignment - 1); 
-}
+
 
 static inline void *create_heap(t_group heap_group, size_t heap_size)
 {
 	void *map = NULL;
-	map = mmap(NULL, heap_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	map = mmap(NULL, heap_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_LOCKED, -1, 0);
 	if (map == MAP_FAILED)
 		return NULL;
 	t_heap *heap = map;
@@ -37,7 +34,9 @@ static inline t_group get_alloc_heap_group(size_t aligned_alloc_size)
 static inline void *create_heap_from_alloc_size(size_t alloc_size)
 {
 	void *heap = NULL;
-	size_t aligned_alloc_size = ALIGN(alloc_size);
+	size_t aligned_alloc_size = align(alloc_size);
+	if (aligned_alloc_size < alloc_size)
+		return NULL;
 	t_group heap_group = get_alloc_heap_group(aligned_alloc_size);
 	if (heap_group == TINY)
 		heap = create_heap(TINY, TINY_HEAP_SIZE);
@@ -45,7 +44,8 @@ static inline void *create_heap_from_alloc_size(size_t alloc_size)
 		heap = create_heap(SMALL, SMALL_HEAP_SIZE);
 	else
 	{
-		size_t new_heap_size = align_on(SIZEOF_T_HEAP + SIZEOF_T_BLOCK + aligned_alloc_size, getpagesize());
+		size_t new_heap_size = SIZEOF_T_HEAP + SIZEOF_T_BLOCK + aligned_alloc_size;
+		new_heap_size = align_on(new_heap_size, getpagesize());
 		heap = create_heap(LARGE, new_heap_size);
 	}
 	return heap;
@@ -83,7 +83,7 @@ static inline void *allocate_and_split(t_block *block, size_t aligned_alloc_size
 
 static inline void *find_fit(size_t alloc_size, t_heap *heap)
 {
-	size_t aligned_alloc_size = ALIGN(alloc_size);
+	size_t aligned_alloc_size = align(alloc_size);
 	t_block *block = SHIFT(heap, SIZEOF_T_HEAP);
 	while (block)
 	{
@@ -152,11 +152,16 @@ void *malloc_impl(size_t size)
 	return alloc;
 }
 
-void *ft_malloc(size_t size)
+void *malloc(size_t size)
 {
 	
 	pthread_mutex_lock(&malloc_mtx);
 	void *alloc = malloc_impl(size);
+
+	ft_putstr_fd("malloc = 0x", 1);
+	print_base((uintptr_t)alloc, 16);
+	ft_putstr_fd("\n", 1);
+
 	pthread_mutex_unlock(&malloc_mtx);
 	return alloc;
 }

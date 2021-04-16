@@ -5,7 +5,7 @@ static inline void print_str(char *str)
 	ft_putstr_fd(str, 1);
 }
 
-static inline void	print_base(uintptr_t nb, unsigned int base)
+inline void	print_base(uintptr_t nb, unsigned int base)
 {
 	static char basestr[17] = "0123456789abcdef";
 
@@ -68,9 +68,14 @@ static inline void show_heap(void *node)
 	foreach_node((void*)block_start, show_block);
 }
 
+void show_alloc_mem_impl()
+{
+	foreach_node(global_start, show_heap);
+}
+
 void show_alloc_mem()
 {
 	pthread_mutex_lock(&malloc_mtx);
-	foreach_node(global_start, show_heap);
+	show_alloc_mem_impl();
 	pthread_mutex_unlock(&malloc_mtx);
 }

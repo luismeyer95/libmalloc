@@ -28,7 +28,7 @@ void show_mem_wrap()
 
 void random_ops(int number, size_t alloc_size_min, size_t alloc_size_max)
 {
-	print_test_header("random_ops()");
+	// print_test_header("random_ops()");
 
 	void *buf[4];
 	ft_bzero(buf, 4 * sizeof(void*));
@@ -37,33 +37,35 @@ void random_ops(int number, size_t alloc_size_min, size_t alloc_size_max)
 	{
 		size_t index_roll = rand() % 4;
 		ptr = &buf[index_roll];
-		printf(" ~ INDEX = %zu ~\n", index_roll);
+		// printf(" ~ INDEX = %zu ~\n", index_roll);
 		size_t size = alloc_size_min + (rand() % (alloc_size_max-alloc_size_min));
 
 		int roll = rand() % 3;
 
 		if (roll == 0 && *ptr)
 		{
-			printf(" ~ FREE(%p) ~\n", *ptr);
-			ft_free(*ptr);
+			// printf(" ~ FREE(%p) ~\n", *ptr);
+			free(*ptr);
 			*ptr = 0;
 		}
 		else if (roll == 1)
 		{
 			void *old = *ptr;
-			*ptr = ft_realloc(old, size);
-			printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
-			printf(" ~ ALIGN(%zu) = %zu ~\n", size, ALIGN(size));
+			*ptr = realloc(old, size);
+			// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
+			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 
 		}
-		else
+		else if (!*ptr)
 		{
-			*ptr = ft_malloc(size);
-			printf(" ~ MALLOC(%zu) = %p ~\n", size, *ptr);
-			printf(" ~ ALIGN(%zu) = %zu ~\n", size, ALIGN(size));
+			*ptr = malloc(size);
+			// printf(" ~ MALLOC(%zu) = %p ~\n", size, *ptr);
+			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 		}
 		show_mem_wrap();
 	}
+	for (int i = 0; i < 4; ++i)
+		free(buf[i]);
 }
 
 void test_coalesce()
@@ -71,42 +73,42 @@ void test_coalesce()
 	print_test_header("test_coalesce()");
 	void *p[4];
 	printf(" ~ MALLOC() 4 x 32 bytes ~\n");
-	p[0] = ft_malloc(32);
-	p[1] = ft_malloc(32);
-	p[2] = ft_malloc(32);
-	p[3] = ft_malloc(32);
+	p[0] = malloc(32);
+	p[1] = malloc(32);
+	p[2] = malloc(32);
+	p[3] = malloc(32);
 	show_mem_wrap();
 
 	printf(" ~ FREE() index 0 and 2 ~\n");
-	ft_free(p[0]);
-	ft_free(p[2]);
+	free(p[0]);
+	free(p[2]);
 	show_mem_wrap();
 
 	printf(" ~ FREE() index 1 ~\n");
-	ft_free(p[1]);
+	free(p[1]);
 	show_mem_wrap();
 }
 
 void test_realloc()
 {
-	print_test_header("test_realloc()");
+	// print_test_header("test_realloc()");
 
-	char *str = ft_malloc(16);
+	char *str = malloc(16);
 	strcpy(str, "Hello world!");
 	show_alloc_mem();
-	str = ft_realloc(str, 5);
+	str = realloc(str, 5);
 	show_alloc_mem();
-	str = ft_realloc(str, 17);
+	str = realloc(str, 17);
 	show_alloc_mem();
-	ft_free(str);
+	free(str);
 }
 
 void test_fat_malloc()
 {
-	print_test_header("fat_malloc");
+	// print_test_header("fat_malloc");
 	size_t size = (size_t)-1;
-	printf("~ MALLOC(%zu) ~\n", size);
-	void *ptr = ft_malloc(size);
+	// printf("~ MALLOC(%zu) ~\n", size);
+	void *ptr = malloc(size);
 	assert(!ptr);
 	assert(errno == ENOMEM);
 }
@@ -115,7 +117,8 @@ void test_macros()
 {
 	print_test_header("test_macros()");
 
-	printf("%d\n", getpagesize());
+	printf("pagesize = %d\n", getpagesize());
+	printf("alignment = %d\n", ALIGNMENT);
 	printf("t_block size = %zu\n", SIZEOF_T_BLOCK);
 	printf("t_heap size = %zu\n", SIZEOF_T_HEAP);
 	printf("tiny heap total size = %zu\n", TINY_HEAP_SIZE);
@@ -130,11 +133,11 @@ void *test_pthreads_func(void *ops)
 
 void test_pthreads(size_t ops_each)
 {
-	print_test_header("pthreads");
+	// print_test_header("pthreads");
 
-	int bak, new;
+	int stdout_backup, new;
 	fflush(stdout);
-	bak = dup(1);
+	stdout_backup = dup(1);
 	new = open("/dev/null", O_WRONLY);
 	dup2(new, 1);
 	close(new);
@@ -146,22 +149,23 @@ void test_pthreads(size_t ops_each)
 		pthread_join(ths[i], NULL);
 	
 	fflush(stdout);
-	dup2(bak, 1);
-	close(bak);
+	dup2(stdout_backup, 1);
+	close(stdout_backup);
 }
 
 
 int main()
 {
-	srand(time(NULL));
+	// srand(time(NULL));
 	
 	// test_macros();
 	// test_realloc();
 	// test_coalesce();
+	test_pthreads(200);
 
-	test_pthreads(100);
 
 	// test_fat_malloc();
-	// random_ops(600, 0, 128);
+	random_ops(3000, 0, 60000);
+	// show_alloc_mem();
 	
 }
