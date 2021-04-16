@@ -1,8 +1,6 @@
 #include <libft_malloc.h>
 
-void *global_start = NULL;
-
-static inline size_t align_on(size_t nb, size_t alignment)
+inline size_t align_on(size_t nb, size_t alignment)
 {
 	return (nb + alignment - 1) & ~(alignment - 1); 
 }
@@ -47,7 +45,7 @@ static inline void *create_heap_from_alloc_size(size_t alloc_size)
 		heap = create_heap(SMALL, SMALL_HEAP_SIZE);
 	else
 	{
-		size_t new_heap_size = align_on(alloc_size, getpagesize());
+		size_t new_heap_size = align_on(SIZEOF_T_HEAP + SIZEOF_T_BLOCK + aligned_alloc_size, getpagesize());
 		heap = create_heap(LARGE, new_heap_size);
 	}
 	return heap;
@@ -135,7 +133,7 @@ static inline void *search_available_heaps(size_t alloc_size, t_group alloc_heap
 	return NULL;
 }
 
-void *ft_malloc(size_t size)
+void *malloc_impl(size_t size)
 {
 	if (!size)
 		return NULL;
@@ -150,5 +148,15 @@ void *ft_malloc(size_t size)
 		return NULL;
 	}
 	insert_sort_heap(new_heap);
-	return find_fit(size, new_heap);
+	alloc = find_fit(size, new_heap);
+	return alloc;
+}
+
+void *ft_malloc(size_t size)
+{
+	
+	pthread_mutex_lock(&malloc_mtx);
+	void *alloc = malloc_impl(size);
+	pthread_mutex_unlock(&malloc_mtx);
+	return alloc;
 }

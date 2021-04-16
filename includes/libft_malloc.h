@@ -4,6 +4,7 @@
 # include <stddef.h>
 # include <stdint.h>
 # include <unistd.h>
+# include <pthread.h>
 # include <sys/mman.h>
 # include <sys/resource.h>
 # include <stdbool.h>
@@ -14,10 +15,10 @@
 # include <errno.h>
 # include <stdlib.h>
 
-typedef	enum s_group
+typedef	enum	s_group
 {
 	TINY, SMALL, LARGE
-}		t_group;
+}				t_group;
 
 typedef	struct		s_node
 {
@@ -25,21 +26,21 @@ typedef	struct		s_node
 	struct s_node	*next;
 }					t_node;
 
-typedef	struct	s_heap
+typedef	struct		s_heap
 {
 	struct s_heap	*prev;
 	struct s_heap	*next;
 	size_t			size;
 	t_group			group;
-}				t_heap;
+}					t_heap;
 
-typedef	struct s_block
+typedef	struct		s_block
 {
 	struct s_block	*prev;
 	struct s_block	*next;
 	size_t			size;
 	bool 			allocated;
-}		t_block;
+}					t_block;
 
 # define ALIGNMENT 16
 # define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
@@ -59,13 +60,19 @@ typedef	struct s_block
 # define SMALL_HEAP_SIZE (align_on(SIZEOF_T_HEAP + \
 	100 * (SMALL_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK), getpagesize()))
 
-void	link_nodes(t_node *n1, t_node *n2);
-void	insert_after_node(t_node *node, t_node *new);
+extern void 			*global_start;
+extern pthread_mutex_t	malloc_mtx;
 
-void	ft_free(void *ptr);
-void	*ft_malloc(size_t size);
-void	*ft_realloc(void *ptr, size_t size);
-void	show_alloc_mem();
+size_t					align_on(size_t nb, size_t alignment);
+void					link_nodes(t_node *n1, t_node *n2);
+void					insert_after_node(t_node *node, t_node *new);
+void					*malloc_impl(size_t size);
+void					free_impl(void *ptr);
+
+void					ft_free(void *ptr);
+void					*ft_malloc(size_t size);
+void					*ft_realloc(void *ptr, size_t size);
+void					show_alloc_mem();
 
 
 #endif

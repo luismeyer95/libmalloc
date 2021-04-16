@@ -1,26 +1,37 @@
 #include <libft_malloc.h>
 
-extern void *global_start;
-
 void *ft_realloc(void *ptr, size_t size)
 {
+	pthread_mutex_lock(&malloc_mtx);
 	if (!ptr)
-		return ft_malloc(size);
+	{
+		ptr = malloc_impl(size);
+		pthread_mutex_unlock(&malloc_mtx);
+		return ptr;
+	}
 	else if (!size)
 	{
-		ft_free(ptr);
+		free_impl(ptr);
+		pthread_mutex_unlock(&malloc_mtx);
 		return NULL;
-	}	
+	}
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 	if (!block->allocated)
+	{
+		pthread_mutex_unlock(&malloc_mtx);
 		return NULL;
+	}
 	if (block->size == ALIGN(size))
+	{
+		pthread_mutex_unlock(&malloc_mtx);
 		return ptr;
-	uint8_t *new_malloc = ft_malloc(size);
+	}
+	uint8_t *new_malloc = malloc_impl(size);
 	if (!new_malloc)
 		return NULL;
 	size_t lencopy = block->size < size ? block->size : size;
 	ft_memcpy(new_malloc, ptr, lencopy);
-	ft_free(ptr);
+	free_impl(ptr);
+	pthread_mutex_unlock(&malloc_mtx);
 	return new_malloc;
 }

@@ -1,7 +1,5 @@
 #include <libft_malloc.h>
 
-extern void *global_start;
-
 static inline void print_str(char *str)
 {
 	ft_putstr_fd(str, 1);
@@ -72,5 +70,7 @@ static inline void show_heap(void *node)
 
 void show_alloc_mem()
 {
+	pthread_mutex_lock(&malloc_mtx);
 	foreach_node(global_start, show_heap);
+	pthread_mutex_unlock(&malloc_mtx);
 }

@@ -20,7 +20,8 @@ INC_DIR		=	includes libft
 SRCS	=	malloc.c \
 			realloc.c \
 			free.c \
-			show_alloc_mem.c
+			show_alloc_mem.c \
+			globals.c
 
 INCLUDE	=	$(addprefix $(INC_DIR)/, \
 				libft_malloc.h \
@@ -43,7 +44,7 @@ $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
 	ln -sf $(NAME) libft_malloc.so
 
 main: $(NAME)
-	$(CC) $(FLAGS) $(addprefix -I, $(INC_DIR)) main.c $(NAME)
+	$(CC) $(FLAGS) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
 	LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
