@@ -1,24 +1,6 @@
 #include <libft_malloc.h>
 
-static inline void print_str(char *str)
-{
-	ft_putstr_fd(str, 1);
-}
 
-inline void	print_base(uintptr_t nb, unsigned int base)
-{
-	static char basestr[17] = "0123456789abcdef";
-
-	if (base > 16 || base < 2)
-		return;
-	if (nb < base)
-		ft_putchar_fd(basestr[nb], 1);
-	else
-	{
-		print_base(nb / base, base);
-		ft_putchar_fd(basestr[nb % base], 1);
-	}
-}
 
 static inline void foreach_node(t_node *lst, void (*f)(void *node))
 {

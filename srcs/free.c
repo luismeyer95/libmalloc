@@ -96,6 +96,10 @@ void free(void *ptr)
 {
 	pthread_mutex_lock(&malloc_mtx);
 
+	static t_debug_flags flags;
+	if (!global_start)
+		fetch_debug_flags(&flags);
+
 	ft_putstr_fd("free 0x", 1);
 	print_base((uintptr_t)ptr, 16);
 	ft_putstr_fd("\n", 1);

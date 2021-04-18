@@ -117,7 +117,8 @@ static inline void insert_sort_heap(t_heap *new_heap)
 	}
 }
 
-static inline void *search_available_heaps(size_t alloc_size, t_group alloc_heap_group)
+static inline void
+*search_available_heaps(size_t alloc_size, t_group alloc_heap_group)
 {
 	t_heap *heap = global_start;
 	while (heap)
@@ -133,7 +134,7 @@ static inline void *search_available_heaps(size_t alloc_size, t_group alloc_heap
 	return NULL;
 }
 
-void *malloc_impl(size_t size)
+inline void *malloc_impl(size_t size)
 {
 	if (!size)
 		return NULL;
@@ -156,11 +157,19 @@ void *malloc(size_t size)
 {
 	
 	pthread_mutex_lock(&malloc_mtx);
+
+	// static t_debug_flags flags;
+	// if (!global_start)
+	// 	fetch_debug_flags(&flags);
+
 	void *alloc = malloc_impl(size);
 
-	ft_putstr_fd("malloc = 0x", 1);
-	print_base((uintptr_t)alloc, 16);
-	ft_putstr_fd("\n", 1);
+	// if (flags.STACK_LOGGING)
+	// 	log_backtrace(alloc);
+
+	// ft_putstr_fd("malloc = 0x", 1);
+	// print_base((uintptr_t)alloc, 16);
+	// ft_putstr_fd("\n", 1);
 
 	pthread_mutex_unlock(&malloc_mtx);
 	return alloc;

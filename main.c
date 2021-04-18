@@ -161,11 +161,13 @@ int main()
 	// test_macros();
 	// test_realloc();
 	// test_coalesce();
-	test_pthreads(200);
+	// test_pthreads(200);
 
 
 	// test_fat_malloc();
-	random_ops(3000, 0, 60000);
+	// random_ops(3000, 0, 60000);
 	// show_alloc_mem();
+
+	(void)malloc(6);
 	
 }

@@ -24,7 +24,8 @@ SRCS	=	malloc.c \
 			free.c \
 			show_alloc_mem.c \
 			globals.c \
-			helpers.c
+			helpers.c \
+			debug_flags.c
 
 INCLUDE	=	$(addprefix $(INC_DIR)/, \
 				libft_malloc.h \

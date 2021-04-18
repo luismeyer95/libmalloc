@@ -9,6 +9,8 @@
 # include <sys/resource.h>
 # include <stdbool.h>
 # include <libft.h>
+# include <execinfo.h>
+
 
 // remove later
 # include <string.h>
@@ -42,6 +44,14 @@ typedef	struct		s_block
 	bool 			allocated;
 }					t_block;
 
+typedef struct		s_debug_flags
+{
+	uint8_t			STACK_LOGGING : 1;
+	uint8_t			SCRIBBLE : 1;
+	uint8_t			CHECK_HEAP_START : 1;
+	uint8_t			CHECK_HEAP_EACH : 1;
+}					t_debug_flags;
+
 # ifndef ALIGNMENT
 #  define ALIGNMENT 16
 # endif
@@ -66,8 +76,11 @@ extern pthread_mutex_t	malloc_mtx;
 
 size_t					align(size_t nb);
 size_t					align_on(size_t nb, size_t alignment);
+void					fetch_debug_flags(t_debug_flags *flags);
+void					log_backtrace(void *alloc);
 void					link_nodes(t_node *n1, t_node *n2);
 void					print_base(uintptr_t nb, unsigned int base);
+void					print_str(char *str);
 
 void					insert_after_node(t_node *node, t_node *new);
 void					*malloc_impl(size_t size);
