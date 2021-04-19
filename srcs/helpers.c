@@ -18,14 +18,16 @@ inline void print_str(char *str)
 inline void	print_base(uintptr_t nb, unsigned int base)
 {
 	static char basestr[17] = "0123456789abcdef";
-
 	if (base > 16 || base < 2)
 		return;
-	if (nb < base)
-		ft_putchar_fd(basestr[nb], 1);
-	else
+	char strnb[65];
+	strnb[64] = 0;
+	char *ptr = strnb + 63;
+	for ( ; nb >= base; --ptr)
 	{
-		print_base(nb / base, base);
-		ft_putchar_fd(basestr[nb % base], 1);
+		*ptr = basestr[nb % base];
+		nb /= base;
 	}
+	*ptr = basestr[nb];
+	ft_putstr_fd(ptr, 1);
 }

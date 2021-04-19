@@ -120,7 +120,6 @@ static inline void insert_sort_heap(t_heap *new_heap, t_arena *arena)
 static inline void
 *search_available_heaps(size_t alloc_size, t_group alloc_heap_group, t_arena *arena)
 {
-	// t_heap *heap = global_start;
 	t_heap *heap = arena->heap_lst;
 	while (heap)
 	{
@@ -146,15 +145,13 @@ inline void *malloc_impl(size_t size, t_arena *arena)
 	t_heap *new_heap = create_heap_from_alloc_size(size);
 	if (!new_heap)
 	{
-		LIBMALLOC_LOCK_WRAP(errno = ENOMEM);
+		errno = ENOMEM;
 		return NULL;
 	}
 	insert_sort_heap(new_heap, arena);
 	alloc = find_fit(size, new_heap);
 	return alloc;
 }
-
-
 
 void *malloc(size_t size)
 {
@@ -164,15 +161,12 @@ void *malloc(size_t size)
 	fetch_debug_flags(&flags);
 
 	t_arena *locked_arena = lock_arena();
-
 	void *alloc = malloc_impl(size, locked_arena);
-	// LIBMALLOC_LOCK_WRAP(
-	// 	ft_putstr_fd("malloc = 0x", 1);
-	// 	print_base((uintptr_t)alloc, 16);
-	// 	ft_putstr_fd("\n", 1);
-	// );
 
 	pthread_mutex_unlock(&locked_arena->arena_mtx);
+
+	// if (flags.STACK_LOGGING)
+	// 	log_backtrace(alloc);
 	
 	return alloc;
 }

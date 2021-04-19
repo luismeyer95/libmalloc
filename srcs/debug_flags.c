@@ -9,13 +9,24 @@ void fetch_debug_flags(t_debug_flags *flags)
 }
 
 __attribute__((always_inline))
-void log_backtrace(void *alloc)
+void *thread_backtrace(void *null)
 {
 	void *array[10];
 	int size;
 
-	(void)alloc;
-	
+	(void)null;
+
 	size = backtrace(array, 10);
 	backtrace_symbols_fd(array, size, 1);
+	return NULL;
+}
+
+__attribute__((always_inline))
+void log_backtrace(void *alloc)
+{
+	(void)alloc;
+
+	pthread_t th;
+	pthread_create(&th, NULL, thread_backtrace, NULL);
+	pthread_join(th, NULL);
 }

@@ -82,9 +82,7 @@ inline void free_impl(void *ptr, t_arena *arena)
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 	if (!is_valid_block(block, arena))
 	{
-		LIBMALLOC_LOCK_WRAP(
-			write(1, "free(): tf you passing a random pointer bitch?\n", 47);
-		);
+		ft_putstr_fd("free(): invalid pointer detected\n", 2);
 		return;
 	}
 	block->allocated = false;
@@ -101,35 +99,15 @@ inline void free_impl(void *ptr, t_arena *arena)
 
 void free(void *ptr)
 {
+	try_init_state();
+
 	if (!ptr)
 		return;
-
-	pthread_mutex_lock(&malloc_mtx);
 	t_arena *arena = pthread_getspecific(*keyptr);
-	if (!arena)
-	{
-		pthread_mutex_unlock(&malloc_mtx);
+	if (!arena || arena->initialized == 0)
 		return;
-	}
-	pthread_mutex_unlock(&malloc_mtx);
 
 	pthread_mutex_lock(&arena->arena_mtx);
-	// LIBMALLOC_LOCK_WRAP(
-	// 	ft_putstr_fd("free 0x", 1);
-	// 	print_base((uintptr_t)ptr, 16);
-	// 	ft_putstr_fd("\n", 1);
-	// );
-
 	free_impl(ptr, arena);
 	pthread_mutex_unlock(&arena->arena_mtx);
-
-
-	// pthread_mutex_lock(&malloc_mtx);
-
-
-	
-	// free_impl(ptr);
-	// // show_alloc_mem_impl();
-
-	// pthread_mutex_unlock(&malloc_mtx);
 }

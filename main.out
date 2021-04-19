@@ -1,0 +1,39 @@
+clang-6.0 -Wall -Wextra -Werror -g3  -D ALIGNMENT=16 -Iincludes -Ilibft -lpthread main.c libft_malloc_x86_64_Linux.so
+LD_LIBRARY_PATH=. ./a.out
+ARENA #0
+==========================
+==========================
+ARENA #0
+==========================
+SMALL : 0x7f9a4cd8a000
+0x7f9a4cd8a050 - 0x7f9a4cdb6820 : 182224 octets FREE
+0x7f9a4cdb6890 - 0x7f9a4cdb69a0 : 272 octets
+0x7f9a4cdb69c0 - 0x7f9a4cdb6ad0 : 272 octets
+0x7f9a4cdb6af0 - 0x7f9a4cdb6c00 : 272 octets
+0x7f9a4cdb6c20 - 0x7f9a4cdb6d30 : 272 octets
+0x7f9a4cdb6d50 - 0x7f9a4cdef000 : 230064 octets FREE
+TINY  : 0x7f9a4ce10000
+0x7f9a4ce10050 - 0x7f9a4ce14000 : 16304 octets FREE
+==========================
+ARENA #1
+==========================
+SMALL : 0x7f9a45361000
+0x7f9a45361050 - 0x7f9a453c6000 : 413616 octets FREE
+TINY  : 0x7f9a4cdf9000
+0x7f9a4cdf9050 - 0x7f9a4cdfd000 : 16304 octets FREE
+==========================
+ARENA #2
+==========================
+SMALL : 0x7f9a4cd25000
+0x7f9a4cd25050 - 0x7f9a4cd8a000 : 413616 octets FREE
+TINY  : 0x7f9a4ce0c000
+0x7f9a4ce0c050 - 0x7f9a4ce10000 : 16304 octets FREE
+==========================
+ARENA #3
+==========================
+SMALL : 0x7f9a4cc18000
+0x7f9a4cc18050 - 0x7f9a4cc7d000 : 413616 octets FREE
+==========================
+ARENA #4
+==========================
+==========================

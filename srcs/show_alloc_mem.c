@@ -68,6 +68,8 @@ void show_alloc_mem_impl()
 
 void show_alloc_mem()
 {
+	try_init_state();
+	
 	pthread_mutex_lock(&malloc_mtx);
 	foreach_arena_mutex(pthread_mutex_trylock);
 	show_alloc_mem_impl();
