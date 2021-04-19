@@ -94,19 +94,19 @@ static inline void *find_fit(size_t alloc_size, t_heap *heap)
 	return (NULL);
 }
 
-static inline void insert_sort_heap(t_heap *new_heap)
+static inline void insert_sort_heap(t_heap *new_heap, t_arena *arena)
 {
-	if (!global_start)
-		global_start = new_heap;
+	if (!arena->heap_lst)
+		arena->heap_lst = new_heap;
 	else
 	{
-		if (new_heap < (t_heap*)global_start)
+		if (new_heap < (t_heap*)arena->heap_lst)
 		{
-			void *old_start = global_start;
-			global_start = new_heap;
-			return link_nodes(global_start, old_start);
+			void *old_start = arena->heap_lst;
+			arena->heap_lst = new_heap;
+			return link_nodes(arena->heap_lst, old_start);
 		}
-		t_heap *heap_it = global_start;
+		t_heap *heap_it = arena->heap_lst;
 		while (heap_it->next)
 		{
 			if (new_heap < heap_it->next)
@@ -118,9 +118,10 @@ static inline void insert_sort_heap(t_heap *new_heap)
 }
 
 static inline void
-*search_available_heaps(size_t alloc_size, t_group alloc_heap_group)
+*search_available_heaps(size_t alloc_size, t_group alloc_heap_group, t_arena *arena)
 {
-	t_heap *heap = global_start;
+	// t_heap *heap = global_start;
+	t_heap *heap = arena->heap_lst;
 	while (heap)
 	{
 		if (heap->group == alloc_heap_group)
@@ -134,43 +135,53 @@ static inline void
 	return NULL;
 }
 
-inline void *malloc_impl(size_t size)
+inline void *malloc_impl(size_t size, t_arena *arena)
 {
 	if (!size)
 		return NULL;
 	t_group alloc_heap_group = get_alloc_heap_group(size);
-	void *alloc = search_available_heaps(size, alloc_heap_group);
+	void *alloc = search_available_heaps(size, alloc_heap_group, arena);
 	if (alloc)
 		return alloc;
 	t_heap *new_heap = create_heap_from_alloc_size(size);
 	if (!new_heap)
 	{
-		errno = ENOMEM;
+		LIBMALLOC_LOCK_WRAP(errno = ENOMEM);
 		return NULL;
 	}
-	insert_sort_heap(new_heap);
+	insert_sort_heap(new_heap, arena);
 	alloc = find_fit(size, new_heap);
 	return alloc;
 }
 
+
+
 void *malloc(size_t size)
 {
+	t_debug_flags flags;
+
+	try_init_state();
+	fetch_debug_flags(&flags);
+
+	t_arena *locked_arena = lock_arena();
+
+	void *alloc = malloc_impl(size, locked_arena);
+	// LIBMALLOC_LOCK_WRAP(
+	// 	ft_putstr_fd("malloc = 0x", 1);
+	// 	print_base((uintptr_t)alloc, 16);
+	// 	ft_putstr_fd("\n", 1);
+	// );
+
+	pthread_mutex_unlock(&locked_arena->arena_mtx);
 	
-	pthread_mutex_lock(&malloc_mtx);
+	return alloc;
+}
 
-	// static t_debug_flags flags;
-	// if (!global_start)
-	// 	fetch_debug_flags(&flags);
-
-	void *alloc = malloc_impl(size);
-
-	// if (flags.STACK_LOGGING)
-	// 	log_backtrace(alloc);
-
-	// ft_putstr_fd("malloc = 0x", 1);
-	// print_base((uintptr_t)alloc, 16);
-	// ft_putstr_fd("\n", 1);
-
-	pthread_mutex_unlock(&malloc_mtx);
+void	*calloc(size_t count, size_t size)
+{
+	void *alloc = malloc(count * size);
+	if (!alloc)
+		return NULL;
+	ft_bzero(alloc, count * size);
 	return alloc;
 }

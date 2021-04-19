@@ -52,12 +52,25 @@ static inline void show_heap(void *node)
 
 void show_alloc_mem_impl()
 {
-	foreach_node(global_start, show_heap);
+	for (int i = 0; i < ARENA_COUNT; ++i)
+	{
+		if (arenas[i].initialized)
+		{
+			print_str("ARENA #");
+			print_base((uintptr_t)i, 10);
+			print_str("\n");
+			print_str("==========================\n");
+			foreach_node(arenas[i].heap_lst, show_heap);
+			print_str("==========================\n");
+		}
+	}
 }
 
 void show_alloc_mem()
 {
 	pthread_mutex_lock(&malloc_mtx);
+	foreach_arena_mutex(pthread_mutex_trylock);
 	show_alloc_mem_impl();
+	foreach_arena_mutex(pthread_mutex_unlock);
 	pthread_mutex_unlock(&malloc_mtx);
 }

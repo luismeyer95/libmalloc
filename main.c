@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <execinfo.h>
+#include <alloca.h>
 
 void print_test_header(char *str)
 {
@@ -42,19 +43,19 @@ void random_ops(int number, size_t alloc_size_min, size_t alloc_size_max)
 
 		int roll = rand() % 3;
 
+		// else if (roll == 1)
+		// {
+		// 	void *old = *ptr;
+		// 	*ptr = realloc(old, size);
+		// 	// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
+		// 	// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
+
+		// }
 		if (roll == 0 && *ptr)
 		{
 			// printf(" ~ FREE(%p) ~\n", *ptr);
 			free(*ptr);
 			*ptr = 0;
-		}
-		else if (roll == 1)
-		{
-			void *old = *ptr;
-			*ptr = realloc(old, size);
-			// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
-			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
-
 		}
 		else if (!*ptr)
 		{
@@ -131,43 +132,46 @@ void *test_pthreads_func(void *ops)
 	return NULL;
 }
 
-void test_pthreads(size_t ops_each)
+void test_pthreads(size_t ops_each, size_t nb_threads)
 {
 	// print_test_header("pthreads");
 
-	int stdout_backup, new;
-	fflush(stdout);
-	stdout_backup = dup(1);
-	new = open("/dev/null", O_WRONLY);
-	dup2(new, 1);
-	close(new);
+	// int stdout_backup, new;
+	// fflush(stdout);
+	// stdout_backup = dup(1);
+	// new = open("/dev/null", O_WRONLY);
+	// dup2(new, 1);
+	// close(new);
 
-	pthread_t ths[32];
-	for (int i = 0; i < 32; ++i)
+	pthread_t *ths = alloca(nb_threads * sizeof(pthread_t));
+	for (size_t i = 0; i < nb_threads; ++i)
 		pthread_create(&ths[i], NULL, test_pthreads_func, (void*)(uintptr_t)(ops_each));
-	for (int i = 0; i < 32; ++i)
+	for (size_t i = 0; i < nb_threads; ++i)
 		pthread_join(ths[i], NULL);
 	
-	fflush(stdout);
-	dup2(stdout_backup, 1);
-	close(stdout_backup);
+	// fflush(stdout);
+	// dup2(stdout_backup, 1);
+	// close(stdout_backup);
+
+	show_alloc_mem();
 }
 
 
 int main()
 {
-	// srand(time(NULL));
+	srand(time(NULL));
 	
 	// test_macros();
 	// test_realloc();
 	// test_coalesce();
-	// test_pthreads(200);
+	// random_ops(3000, 0, 6000);
+	// free(malloc(3));
+
+	test_pthreads(50, 50);
 
 
 	// test_fat_malloc();
-	// random_ops(3000, 0, 60000);
-	// show_alloc_mem();
+	show_alloc_mem();
 
-	(void)malloc(6);
 	
 }
