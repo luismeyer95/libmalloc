@@ -1,11 +1,13 @@
 #include <libft_malloc.h>
 
-
-
-static inline void *create_heap(t_group heap_group, size_t heap_size)
+static inline void
+*create_heap(t_group heap_group, size_t heap_size)
 {
 	void *map = NULL;
-	map = mmap(NULL, heap_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_LOCKED, -1, 0);
+	int mprot = PROT_READ|PROT_WRITE;
+	int mflags = MAP_PRIVATE|MAP_ANONYMOUS|MAP_LOCKED;
+
+	map = mmap(NULL, heap_size, mprot, mflags, -1, 0);
 	if (map == MAP_FAILED)
 		return NULL;
 	t_heap *heap = map;
@@ -21,7 +23,8 @@ static inline void *create_heap(t_group heap_group, size_t heap_size)
 	return map;
 }
 
-static inline t_group get_alloc_heap_group(size_t aligned_alloc_size)
+static inline t_group
+get_alloc_heap_group(size_t aligned_alloc_size)
 {
 	if (aligned_alloc_size > SMALL_MAX_ALLOC_SIZE)
 		return LARGE;
@@ -31,7 +34,8 @@ static inline t_group get_alloc_heap_group(size_t aligned_alloc_size)
 		return TINY;
 }
 
-static inline void *create_heap_from_alloc_size(size_t alloc_size)
+static inline void
+*create_heap_from_alloc_size(size_t alloc_size)
 {
 	void *heap = NULL;
 	size_t aligned_alloc_size = align(alloc_size);
@@ -51,7 +55,8 @@ static inline void *create_heap_from_alloc_size(size_t alloc_size)
 	return heap;
 }
 
-inline void link_nodes(t_node *n1, t_node *n2)
+inline void
+link_nodes(t_node *n1, t_node *n2)
 {
 	if (n1)
 		n1->next = n2;
@@ -59,14 +64,16 @@ inline void link_nodes(t_node *n1, t_node *n2)
 		n2->prev = n1;
 }
 
-inline void insert_after_node(t_node *node, t_node *new)
+inline void
+insert_after_node(t_node *node, t_node *new)
 {
 	t_node *next_node = node->next;
 	link_nodes(node, new);
 	link_nodes(new, next_node);
 }
 
-static inline void *allocate_and_split(t_block *block, size_t aligned_alloc_size)
+static inline void
+*allocate_and_split(t_block *block, size_t aligned_alloc_size)
 {
 	size_t remaining_space = block->size - aligned_alloc_size;
 	if (remaining_space > SIZEOF_T_BLOCK)
@@ -81,7 +88,8 @@ static inline void *allocate_and_split(t_block *block, size_t aligned_alloc_size
 	return (SHIFT(block, SIZEOF_T_BLOCK));
 }
 
-static inline void *find_fit(size_t alloc_size, t_heap *heap)
+static inline void
+*find_fit(size_t alloc_size, t_heap *heap)
 {
 	size_t aligned_alloc_size = align(alloc_size);
 	t_block *block = SHIFT(heap, SIZEOF_T_HEAP);
@@ -94,7 +102,8 @@ static inline void *find_fit(size_t alloc_size, t_heap *heap)
 	return (NULL);
 }
 
-static inline void insert_sort_heap(t_heap *new_heap, t_arena *arena)
+static inline void
+insert_sort_heap(t_heap *new_heap, t_arena *arena)
 {
 	if (!arena->heap_lst)
 		arena->heap_lst = new_heap;
@@ -118,7 +127,8 @@ static inline void insert_sort_heap(t_heap *new_heap, t_arena *arena)
 }
 
 static inline void
-*search_available_heaps(size_t alloc_size, t_group alloc_heap_group, t_arena *arena)
+*search_available_heaps
+(size_t alloc_size, t_group alloc_heap_group, t_arena *arena)
 {
 	t_heap *heap = arena->heap_lst;
 	while (heap)
@@ -155,18 +165,15 @@ inline void *malloc_impl(size_t size, t_arena *arena)
 
 void *malloc(size_t size)
 {
-	t_debug_flags flags;
-
 	try_init_state();
-	fetch_debug_flags(&flags);
 
 	t_arena *locked_arena = lock_arena();
 	void *alloc = malloc_impl(size, locked_arena);
+	unlock_arena(locked_arena);
 
-	pthread_mutex_unlock(&locked_arena->arena_mtx);
-
-	// if (flags.STACK_LOGGING)
-	// 	log_backtrace(alloc);
+	t_ctl *ctl = malloc_ctl();
+	if (!get_recursive_flag() && ctl->dbg_flags.STACK_LOGGING)
+		log_malloc_call(LOGFILE_PATH, size, alloc);
 	
 	return alloc;
 }

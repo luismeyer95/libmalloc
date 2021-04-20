@@ -20,6 +20,15 @@ void print_test_header(char *str)
 	write(1, "\n", 1);
 }
 
+void print_test_footer()
+{
+	write(1,
+		"---------\n"
+		"| E N D |\n"
+		"---------\n\n"
+	, 31);
+}
+
 void show_mem_wrap()
 {
 	ft_putstr_fd("------------------\n", 1);
@@ -43,19 +52,18 @@ void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 
 		int roll = rand() % 3;
 
-		// else if (roll == 1)
-		// {
-		// 	void *old = *ptr;
-		// 	*ptr = realloc(old, size);
-		// 	// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
-		// 	// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
-
-		// }
 		if (roll == 0 && *ptr)
 		{
 			// printf(" ~ FREE(%p) ~\n", *ptr);
 			free(*ptr);
 			*ptr = 0;
+		}
+		else if (roll == 1)
+		{
+			void *old = *ptr;
+			*ptr = realloc(old, size);
+			// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
+			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 		}
 		else if (!*ptr)
 		{
@@ -64,9 +72,12 @@ void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 		}
 		// show_mem_wrap();
+		show_alloc_mem();
 	}
 	for (int i = 0; i < 4; ++i)
 		free(buf[i]);
+
+	print_test_footer();
 }
 
 void test_coalesce()
@@ -88,11 +99,16 @@ void test_coalesce()
 	printf(" ~ FREE() index 1 ~\n");
 	free(p[1]);
 	show_mem_wrap();
+	printf(" ~ FREE() index 1 ~\n");
+	free(p[3]);
+	show_mem_wrap();
+
+	print_test_footer();
 }
 
 void test_realloc()
 {
-	// print_test_header("test_realloc()");
+	print_test_header("test_realloc()");
 
 	char *str = malloc(16);
 	strcpy(str, "Hello world!");
@@ -102,16 +118,20 @@ void test_realloc()
 	str = realloc(str, 17);
 	show_alloc_mem();
 	free(str);
+	show_alloc_mem();
+
+	print_test_footer();
 }
 
 void test_fat_malloc()
 {
-	// print_test_header("fat_malloc");
+	print_test_header("fat_malloc");
 	size_t size = (size_t)-1;
-	// printf("~ MALLOC(%zu) ~\n", size);
+	printf("~ MALLOC(%zu) ~\n", size);
 	void *ptr = malloc(size);
 	assert(!ptr);
 	assert(errno == ENOMEM);
+	print_test_footer();
 }
 
 void test_macros()
@@ -124,6 +144,8 @@ void test_macros()
 	printf("t_heap size = %zu\n", SIZEOF_T_HEAP);
 	printf("tiny heap total size = %zu\n", TINY_HEAP_SIZE);
 	printf("small heap total size = %zu\n", SMALL_HEAP_SIZE);
+
+	print_test_footer();
 }
 
 void *test_pthreads_func(void *bytes)
@@ -136,9 +158,10 @@ void *test_pthreads_func(void *bytes)
 	return NULL;
 }
 
-void test_pthreads(size_t nb_threads, size_t ops_each, size_t alloc_size_min, size_t alloc_size_max)
+void	test_pthreads(size_t nb_threads, size_t ops_each,
+		size_t alloc_size_min, size_t alloc_size_max)
 {
-	// print_test_header("pthreads");
+	print_test_header("pthreads");
 
 	// int stdout_backup, new;
 	// fflush(stdout);
@@ -146,10 +169,11 @@ void test_pthreads(size_t nb_threads, size_t ops_each, size_t alloc_size_min, si
 	// new = open("/dev/null", O_WRONLY);
 	// dup2(new, 1);
 	// close(new);
+
 	uint8_t bytes[32];
 	memcpy(bytes, &ops_each, 8);
-	memcpy(bytes + 8, &alloc_size_min, 8);
-	memcpy(bytes + 16, &alloc_size_max, 8);
+	memcpy(bytes+8, &alloc_size_min, 8);
+	memcpy(bytes+16, &alloc_size_max, 8);
 
 
 	pthread_t *ths = alloca(nb_threads * sizeof(pthread_t));
@@ -162,26 +186,25 @@ void test_pthreads(size_t nb_threads, size_t ops_each, size_t alloc_size_min, si
 	// dup2(stdout_backup, 1);
 	// close(stdout_backup);
 
-}
+	print_test_footer();
 
+}
 
 int main()
 {
 	srand(time(NULL));
+	setvbuf(stdout, NULL, _IONBF, 0);
 	
 	// test_macros();
 	// test_realloc();
-	// test_coalesce();
-	// random_ops(3000, 0, 6000);
-	// free(malloc(3));
-
 	// test_fat_malloc();
+	// test_coalesce();
 
-	free(malloc(9000));
+	// random_ops(3000, 0, 6000);
+	// test_pthreads(600, 100, 0, 4096 * 128);
+
+	test_pthreads(100, 10, 0, 4096 * 128);
+	// test_pthreads(1, 1, 0, 10000);
+
 	show_alloc_mem();
-
-	test_pthreads(600, 100, 0, 4096 * 128);
-	show_alloc_mem();
-
-	
 }

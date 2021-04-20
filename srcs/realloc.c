@@ -28,6 +28,6 @@ void *realloc(void *ptr, size_t size)
 	try_init_state();
 	t_arena *locked_arena = lock_arena();
 	void *alloc = realloc_impl(ptr, size, locked_arena);
-	pthread_mutex_unlock(&locked_arena->arena_mtx);
+	unlock_arena(locked_arena);
 	return alloc;
 }

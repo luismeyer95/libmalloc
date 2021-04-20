@@ -103,11 +103,15 @@ void free(void *ptr)
 
 	if (!ptr)
 		return;
-	t_arena *arena = pthread_getspecific(*keyptr);
+	t_arena *arena = get_arena();
 	if (!arena || arena->initialized == 0)
 		return;
 
-	pthread_mutex_lock(&arena->arena_mtx);
+	lock_arena();
 	free_impl(ptr, arena);
-	pthread_mutex_unlock(&arena->arena_mtx);
+	unlock_arena(arena);
+
+	t_ctl *ctl = malloc_ctl();
+	if (!get_recursive_flag() && ctl->dbg_flags.STACK_LOGGING)
+		log_free_call(LOGFILE_PATH, ptr);
 }

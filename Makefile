@@ -49,7 +49,7 @@ $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
 	ln -sf $(NAME) libft_malloc.so
 
 main: $(NAME)
-	$(CC) $(FLAGS) -D ALIGNMENT=$(ALIGNMENT) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
+	$(CC) $(FLAGS) -rdynamic -D ALIGNMENT=$(ALIGNMENT) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
 	LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c

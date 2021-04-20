@@ -2,14 +2,19 @@
 
 inline void try_init_state()
 {
-	static pthread_key_t key;
+	t_ctl *ctl = malloc_ctl();
+	static pthread_key_t arena_key;
+	static pthread_key_t recursion_key;
 
 	pthread_mutex_lock(&malloc_mtx);
-	if (!keyptr)
+	if (!ctl->arena_key)
 	{
-		pthread_key_create(&key, NULL);
+		pthread_key_create(&arena_key, NULL);
+		pthread_key_create(&recursion_key, NULL);
+		ctl->arena_key = &arena_key;
+		ctl->recursion_key = &recursion_key;
 		init_arenas(arenas);
-		keyptr = &key;
+		fetch_debug_flags();
 	}
 	pthread_mutex_unlock(&malloc_mtx);
 }
@@ -40,7 +45,7 @@ inline void foreach_arena_mutex(int (*lockfunc)(pthread_mutex_t*))
 
 inline t_arena *lock_arena()
 {
-	t_arena *arena = pthread_getspecific(*keyptr);
+	t_arena *arena = get_arena();
 	if (arena == NULL)
 		return trylock_and_assign_arena();
 	else
@@ -50,6 +55,11 @@ inline t_arena *lock_arena()
 	}
 }
 
+inline void unlock_arena(t_arena *arena)
+{
+	pthread_mutex_unlock(&arena->arena_mtx);
+}
+
 inline t_arena *trylock_and_assign_arena()
 {
 	for (int i = 0; i < ARENA_COUNT; i = (i + 1) % ARENA_COUNT)
@@ -57,7 +67,8 @@ inline t_arena *trylock_and_assign_arena()
 		if (pthread_mutex_trylock(&(arenas[i].arena_mtx)) == 0)
 		{
 			arenas[i].initialized = 1;
-			pthread_setspecific(*keyptr, &arenas[i]);
+			// pthread_setspecific(*ctl->arena_key, &arenas[i]);
+			set_arena(&arenas[i]);
 			return &arenas[i];
 		}
 	}
