@@ -28,12 +28,13 @@ static inline t_heap *find_heap_of_block(t_block *block, t_arena *arena)
 
 static inline bool can_del_heap(t_heap *heap, t_arena *arena)
 {
+	if (heap->group == LARGE)
+		return true;
+
 	t_block *block = (void*)SHIFT(heap, SIZEOF_T_HEAP);
 	if (block->allocated || block->next)
 		return false;
 
-	if (heap->group == LARGE)
-		return true;
 	t_heap *it = arena->heap_lst;
 	size_t count = 0;
 	while (it)
@@ -112,6 +113,6 @@ void free(void *ptr)
 	unlock_arena(arena);
 
 	t_ctl *ctl = malloc_ctl();
-	if (!get_recursive_flag() && ctl->dbg_flags.STACK_LOGGING)
+	if (ctl->dbg_flags.STACK_LOGGING)
 		log_free_call(LOGFILE_PATH, ptr);
 }

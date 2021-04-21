@@ -172,7 +172,7 @@ void *malloc(size_t size)
 	unlock_arena(locked_arena);
 
 	t_ctl *ctl = malloc_ctl();
-	if (!get_recursive_flag() && ctl->dbg_flags.STACK_LOGGING)
+	if (ctl->dbg_flags.STACK_LOGGING)
 		log_malloc_call(LOGFILE_PATH, size, alloc);
 	
 	return alloc;

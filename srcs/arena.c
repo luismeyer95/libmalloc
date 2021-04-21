@@ -21,12 +21,17 @@ inline void try_init_state()
 
 inline void init_arenas(t_arena *arenas)
 {
+	// pthread_mutexattr_t attr;
+
+	// pthread_mutexattr_init(&attr);
+	// pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	for (int i = 0; i < ARENA_COUNT; ++i)
 	{
 		pthread_mutex_init(&(arenas[i].arena_mtx), NULL);
 		arenas[i].heap_lst = NULL;
 		arenas[i].initialized = 0;
 	}
+	// pthread_mutexattr_destroy(&attr);
 }
 
 inline void foreach_arena_mutex(int (*lockfunc)(pthread_mutex_t*))
