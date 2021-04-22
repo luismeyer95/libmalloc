@@ -74,3 +74,30 @@ void show_alloc_mem()
 	foreach_arena_mutex(pthread_mutex_unlock);
 	pthread_mutex_unlock(&malloc_mtx);
 }
+
+void hexdump_block(void *ptr)
+{
+	print_base(1, (uintptr_t)ptr, 16);
+	
+}
+
+void show_alloc_mem_ex(void *ptr)
+{
+	try_init_state();
+
+	if (!ptr)
+	{
+		pthread_mutex_lock(&malloc_mtx);
+		foreach_arena_mutex(pthread_mutex_trylock);
+		show_alloc_mem_impl();
+		foreach_arena_mutex(pthread_mutex_unlock);
+		pthread_mutex_unlock(&malloc_mtx);
+	}
+	else
+	{
+		t_arena *arena = lock_arena();
+		hexdump_block(ptr);
+		unlock_arena(arena);
+	}
+	
+}

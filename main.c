@@ -200,10 +200,10 @@ int main()
 	// test_fat_malloc();
 	// test_coalesce();
 
-	// random_ops(3000, 0, 6000);
+	random_ops(3000, 0, 6000);
 	// test_pthreads(600, 100, 0, 4096 * 128);
 
-	test_pthreads(100, 20, 0, 4096 * 128);
+	// test_pthreads(100, 20, 0, 4096 * 128);
 	// test_pthreads(1, 1, 0, 10000);
 
 	show_alloc_mem();

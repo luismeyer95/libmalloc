@@ -24,11 +24,11 @@ static inline void
 }
 
 static inline t_group
-get_alloc_heap_group(size_t aligned_alloc_size)
+get_alloc_heap_group(size_t alloc_size)
 {
-	if (aligned_alloc_size > SMALL_MAX_ALLOC_SIZE)
+	if (alloc_size > SMALL_MAX_ALLOC_SIZE)
 		return LARGE;
-	else if (aligned_alloc_size > TINY_MAX_ALLOC_SIZE)
+	else if (alloc_size > TINY_MAX_ALLOC_SIZE)
 		return SMALL;
 	else
 		return TINY;
@@ -76,6 +76,8 @@ static inline void
 *allocate_and_split(t_block *block, size_t aligned_alloc_size)
 {
 	size_t remaining_space = block->size - aligned_alloc_size;
+	block->allocated = true;
+	block->size = aligned_alloc_size;
 	if (remaining_space > SIZEOF_T_BLOCK)
 	{
 		t_block *free_block = SHIFT(block, SIZEOF_T_BLOCK + aligned_alloc_size);
@@ -83,8 +85,6 @@ static inline void
 		free_block->size = remaining_space - SIZEOF_T_BLOCK;
 		insert_after_node((void*)block, (void*)free_block);
 	}
-	block->allocated = true;
-	block->size = aligned_alloc_size;
 	return (SHIFT(block, SIZEOF_T_BLOCK));
 }
 
@@ -92,6 +92,9 @@ static inline void
 *find_fit(size_t alloc_size, t_heap *heap)
 {
 	size_t aligned_alloc_size = align(alloc_size);
+	if (aligned_alloc_size < alloc_size)
+		return NULL;
+
 	t_block *block = SHIFT(heap, SIZEOF_T_HEAP);
 	while (block)
 	{
@@ -165,13 +168,15 @@ inline void *malloc_impl(size_t size, t_arena *arena)
 
 void *malloc(size_t size)
 {
+	t_ctl *ctl = malloc_ctl();
 	try_init_state();
 
 	t_arena *locked_arena = lock_arena();
 	void *alloc = malloc_impl(size, locked_arena);
+	if (alloc && ctl->dbg_flags.PRESCRIBBLE)
+		ft_memset(alloc, 0xAA, align(size));
 	unlock_arena(locked_arena);
 
-	t_ctl *ctl = malloc_ctl();
 	if (ctl->dbg_flags.STACK_LOGGING)
 		log_malloc_call(LOGFILE_PATH, size, alloc);
 	

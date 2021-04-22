@@ -76,43 +76,42 @@ static inline void try_merge(t_block *block)
 		merge_free_blocks(block, block->next->next);
 }
 
+static inline void unlink_unmap_heap(t_heap *heap, t_arena *arena)
+{
+	link_nodes((void*)heap->prev, (void*)heap->next);
+	if (arena->heap_lst == (void*)heap)
+		arena->heap_lst = heap->next;
+	munmap(heap, SIZEOF_T_HEAP + heap->size);
+}
+
 inline void free_impl(void *ptr, t_arena *arena)
 {
 	if (!ptr)
 		return;
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 	if (!is_valid_block(block, arena))
-	{
-		ft_putstr_fd("free(): invalid pointer detected\n", 2);
 		return;
-	}
 	block->allocated = false;
+	if (malloc_ctl()->dbg_flags.SCRIBBLE)
+		ft_memset(ptr, 0x55, block->size);
 	try_merge(block);
 	t_heap *heap = find_heap_of_block(block, arena);
 	if (can_del_heap(heap, arena))
-	{
-		link_nodes((void*)heap->prev, (void*)heap->next);
-		if (arena->heap_lst == (void*)heap)
-			arena->heap_lst = heap->next;
-		munmap(heap, SIZEOF_T_HEAP + heap->size);
-	}
+		unlink_unmap_heap(heap, arena);
 }
 
 void free(void *ptr)
 {
 	try_init_state();
 
-	if (!ptr)
-		return;
+	if (malloc_ctl()->dbg_flags.STACK_LOGGING)
+		log_free_call(LOGFILE_PATH, ptr);
+
 	t_arena *arena = get_arena();
 	if (!arena || arena->initialized == 0)
 		return;
 
 	lock_arena();
 	free_impl(ptr, arena);
-	unlock_arena(arena);
-
-	t_ctl *ctl = malloc_ctl();
-	if (ctl->dbg_flags.STACK_LOGGING)
-		log_free_call(LOGFILE_PATH, ptr);
+	unlock_arena(arena);	
 }

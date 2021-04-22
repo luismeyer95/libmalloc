@@ -14,7 +14,7 @@ inline void try_init_state()
 		ctl->arena_key = &arena_key;
 		ctl->recursion_key = &recursion_key;
 		init_arenas(arenas);
-		fetch_debug_flags();
+		// fetch_debug_flags();
 	}
 	pthread_mutex_unlock(&malloc_mtx);
 }
@@ -72,7 +72,6 @@ inline t_arena *trylock_and_assign_arena()
 		if (pthread_mutex_trylock(&(arenas[i].arena_mtx)) == 0)
 		{
 			arenas[i].initialized = 1;
-			// pthread_setspecific(*ctl->arena_key, &arenas[i]);
 			set_arena(&arenas[i]);
 			return &arenas[i];
 		}

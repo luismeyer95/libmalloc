@@ -12,6 +12,7 @@
 # include <stdbool.h>
 # include <libft.h>
 # include <execinfo.h>
+# include <stdarg.h>
 
 // remove later
 # include <string.h>
@@ -48,57 +49,56 @@
 	pthread_mutex_unlock(&malloc_mtx)
 
 
-typedef	enum	s_group
+typedef	enum			s_group
 {
 	TINY, SMALL, LARGE
-}				t_group;
+}						t_group;
 
-typedef	struct		s_node
+typedef	struct			s_node
 {
-	struct s_node	*prev;
-	struct s_node	*next;
-}					t_node;
+	struct s_node		*prev;
+	struct s_node		*next;
+}						t_node;
 
-typedef struct		s_arena
+typedef struct			s_arena
 {
-	int				initialized;
-	void			*heap_lst;
-	pthread_mutex_t arena_mtx;
-}					t_arena;
+	int					initialized;
+	void				*heap_lst;
+	pthread_mutex_t 	arena_mtx;
+}						t_arena;
 
-typedef	struct		s_heap
+typedef	struct			s_heap
 {
-	struct s_heap	*prev;
-	struct s_heap	*next;
-	size_t			size;
-	t_group			group;
-	t_arena			*arena;
-}					t_heap;
+	struct s_heap		*prev;
+	struct s_heap		*next;
+	size_t				size;
+	t_group				group;
+	t_arena				*arena;
+}						t_heap;
 
-typedef	struct		s_block
+typedef	struct			s_block
 {
-	struct s_block	*prev;
-	struct s_block	*next;
-	size_t			size;
-	bool 			allocated;
-}					t_block;
+	struct s_block		*prev;
+	struct s_block		*next;
+	size_t				size;
+	bool 				allocated;
+}						t_block;
 
-typedef struct		s_debug_flags
+typedef struct			s_debug_flags
 {
-	uint8_t			STACK_LOGGING : 1;
-	uint8_t			SCRIBBLE : 1;
-	uint8_t			PRESCRIBBLE : 1;
-	uint8_t			CHECK_HEAP_START : 1;
-	uint8_t			CHECK_HEAP_EACH : 1;
-}					t_debug_flags;
+	uint8_t				STACK_LOGGING : 1;
+	uint8_t				SCRIBBLE : 1;
+	uint8_t				PRESCRIBBLE : 1;
+	uint8_t				CHECK_HEAP_START : 1;
+	uint8_t				CHECK_HEAP_EACH : 1;
+}						t_debug_flags;
 
-typedef struct		s_ctl
+typedef struct			s_ctl
 {
-	pthread_key_t	*arena_key;
-	pthread_key_t	*recursion_key;
-	t_debug_flags	dbg_flags;
-}					t_ctl;
-
+	pthread_key_t		*arena_key;
+	pthread_key_t		*recursion_key;
+	t_debug_flags		dbg_flags;
+}						t_ctl;
 
 extern pthread_mutex_t	malloc_mtx;
 extern t_arena			arenas[ARENA_COUNT];
