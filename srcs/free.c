@@ -1,6 +1,6 @@
 #include <libft_malloc.h>
 
-static inline bool is_valid_block(t_block *block, t_arena *arena)
+inline bool is_valid_block(t_block *block, t_arena *arena)
 {
 	t_heap *heap_it = arena->heap_lst;
 	while (heap_it)

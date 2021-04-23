@@ -15,51 +15,39 @@ static inline void show_block(void *node)
 {
 	t_block *block = node;
 
-	// if (!block->allocated)
-	// 	return;
-
-	print_str(1, "0x");
-	print_base(1, (uintptr_t)SHIFT(block, SIZEOF_T_BLOCK), 16);
-	print_str(1, " - 0x");
-	print_base(1, (uintptr_t)SHIFT(block, SIZEOF_T_BLOCK + block->size), 16);
-	print_str(1, " : ");
-	print_base(1, block->size, 10);
-	print_str(1, " octets");
+	void *start = SHIFT(block, SIZEOF_T_BLOCK);
+	void *end = SHIFT(block, SIZEOF_T_BLOCK + block->size);
+	mprintf(1, "|%18p |%18p |%14u bytes |", start, end, block->size);
 	if (block->allocated)
-		print_str(1, "\n");
+		mprintf(1, "\n");
 	else
-		print_str(1, " FREE\n");
+		mprintf(1, " (FREE)\n");
 }
 
 static inline void show_heap(void *node)
 {
+	static char *gpmap[] = {"TINY", "SMALL", "LARGE"};
 	t_heap *heap = node;
-	if (heap->group == TINY)
-		print_str(1, "TINY  : 0x");
-	else if (heap->group == SMALL)
-		print_str(1, "SMALL : 0x");
-	else
-		print_str(1, "LARGE : 0x");
 
-	print_base(1, (uintptr_t)heap, 16);
-	print_str(1, "\n");
-
+	mprintf(1, "%-5s : %p\n", gpmap[(int)heap->group], heap);
+	mprintf(1, "|%18s | %17s | %19s |\n", "start", "end", "size");
 	t_block *block_start = SHIFT(heap, SIZEOF_T_HEAP);
 	foreach_node((void*)block_start, show_block);
+	mprintf(1, "\n");
 }
 
 void show_alloc_mem_impl()
 {
+	char sep[] = "=================================="
+	"=============================\n";
 	for (int i = 0; i < ARENA_COUNT; ++i)
 	{
 		if (arenas[i].initialized)
 		{
-			print_str(1, "ARENA #");
-			print_base(1, (uintptr_t)i, 10);
-			print_str(1, "\n");
-			print_str(1, "==========================\n");
+			mprintf(1, "ARENA #%d\n", i);
+			mprintf(1, sep);
 			foreach_node(arenas[i].heap_lst, show_heap);
-			print_str(1, "==========================\n");
+			mprintf(1, sep);
 		}
 	}
 }
@@ -75,10 +63,12 @@ void show_alloc_mem()
 	pthread_mutex_unlock(&malloc_mtx);
 }
 
-void hexdump_block(void *ptr)
+void hexdump_block(t_block *block)
 {
-	print_base(1, (uintptr_t)ptr, 16);
-	
+	uint8_t *bp = SHIFT(block, SIZEOF_T_BLOCK);
+	for (; bp != block->)
+	mprintf(1, "%18p  ", bp);
+
 }
 
 void show_alloc_mem_ex(void *ptr)
@@ -96,7 +86,9 @@ void show_alloc_mem_ex(void *ptr)
 	else
 	{
 		t_arena *arena = lock_arena();
-		hexdump_block(ptr);
+		t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
+		if (is_valid_block(block, arena))
+			hexdump_block(ptr);
 		unlock_arena(arena);
 	}
 	

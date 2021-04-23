@@ -35,6 +35,7 @@
 
 # define SHIFT(x, size) ((void*)((char*)(x) + (size)))
 # define ABS(x) ((x) > 0 ? (x) : -(x))
+# define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 # define TINY_HEAP_SIZE (align_on(SIZEOF_T_HEAP + \
 	100 * (TINY_MAX_ALLOC_SIZE + SIZEOF_T_BLOCK), getpagesize()))
@@ -133,12 +134,17 @@ void					*malloc_impl(size_t size, t_arena *arena);
 void					free_impl(void *ptr, t_arena *arena);
 void					*realloc_impl(void *ptr, size_t size, t_arena *arena);
 void					show_alloc_mem_impl();
+bool					is_valid_block(t_block *block, t_arena *arena);
+
 
 void					free(void *ptr);
 void					*malloc(size_t size);
 void					*realloc(void *ptr, size_t size);
 void					*calloc(size_t count, size_t size);
 void					show_alloc_mem();
+size_t					mprintf(int fd, char *str, ...);
+
+
 
 
 #endif

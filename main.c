@@ -193,7 +193,7 @@ void	test_pthreads(size_t nb_threads, size_t ops_each,
 int main()
 {
 	srand(time(NULL));
-	setvbuf(stdout, NULL, _IONBF, 0);
+	// setvbuf(stdout, NULL, _IONBF, 0);
 	
 	// test_macros();
 	// test_realloc();
@@ -207,4 +207,5 @@ int main()
 	// test_pthreads(1, 1, 0, 10000);
 
 	show_alloc_mem();
+
 }
