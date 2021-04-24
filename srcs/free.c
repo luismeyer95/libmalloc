@@ -8,7 +8,7 @@ inline bool is_valid_block(t_block *block, t_arena *arena)
 		t_block *block_it = SHIFT(heap_it, SIZEOF_T_HEAP);
 		while (block_it)
 		{
-			if (block_it == block)
+			if (block_it == block && block->allocated)
 				return true;
 			block_it = block_it->next;
 		}
@@ -90,7 +90,10 @@ inline void free_impl(void *ptr, t_arena *arena)
 		return;
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 	if (!is_valid_block(block, arena))
+	{
+		// write(1, "tf bitch?\n", 10);
 		return;
+	}
 	block->allocated = false;
 	if (malloc_ctl()->dbg_flags.SCRIBBLE)
 		ft_memset(ptr, 0x55, block->size);

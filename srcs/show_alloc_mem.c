@@ -65,9 +65,27 @@ void show_alloc_mem()
 
 void hexdump_block(t_block *block)
 {
-	uint8_t *bp = SHIFT(block, SIZEOF_T_BLOCK);
-	for (; bp != block->)
-	mprintf(1, "%18p  ", bp);
+	uint8_t *start = SHIFT(block, SIZEOF_T_BLOCK);
+	uint8_t *end = SHIFT(start, block->size);
+
+	for (uint8_t *ptr = start; ptr != end; ptr += 16)
+	{
+		mprintf(1, "%18p  ", ptr);
+		for (int i = 0; i < 8; ++i)
+			mprintf(1, "%2x ", ptr[i]);
+		mprintf(1, " ");
+		for (int i = 8; i < 16; ++i)
+			mprintf(1, "%2x ", ptr[i]);
+		mprintf(1, " |");
+		for (int i = 0; i < 16; ++i)
+		{
+			if (ft_isprint(ptr[i]))
+				ft_putchar_fd(ptr[i], 1);
+			else
+				mprintf(1, BLK WHTB "." RESET);
+		}
+		ft_putstr_fd("|\n", 1);
+	}
 
 }
 
@@ -88,7 +106,9 @@ void show_alloc_mem_ex(void *ptr)
 		t_arena *arena = lock_arena();
 		t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 		if (is_valid_block(block, arena))
-			hexdump_block(ptr);
+			hexdump_block(block);
+		else
+			mprintf(1, "Invalid block\n");
 		unlock_arena(arena);
 	}
 	

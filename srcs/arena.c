@@ -14,7 +14,7 @@ inline void try_init_state()
 		ctl->arena_key = &arena_key;
 		ctl->recursion_key = &recursion_key;
 		init_arenas(arenas);
-		// fetch_debug_flags();
+		fetch_debug_flags();
 	}
 	pthread_mutex_unlock(&malloc_mtx);
 }

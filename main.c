@@ -15,7 +15,7 @@ void print_test_header(char *str)
 	assert(framelen < 512);
 	memset(buf, '-', framelen);
 	write(1, buf, framelen);
-	printf("\n| TEST %s |\n", str);
+	mprintf(1, "\n| TEST %s |\n", str);
 	write(1, buf, framelen);
 	write(1, "\n", 1);
 }
@@ -200,12 +200,20 @@ int main()
 	// test_fat_malloc();
 	// test_coalesce();
 
-	random_ops(3000, 0, 6000);
+	// random_ops(3000, 0, 6000);
 	// test_pthreads(600, 100, 0, 4096 * 128);
 
 	// test_pthreads(100, 20, 0, 4096 * 128);
 	// test_pthreads(1, 1, 0, 10000);
 
+	void *ptr = malloc(32);
+	strcpy(ptr, "Hello world!");
 	show_alloc_mem();
+
+	show_alloc_mem_ex(ptr);
+
+	free(ptr);
+
+	// show_alloc_mem();
 
 }

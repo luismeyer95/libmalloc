@@ -49,6 +49,10 @@
 	st;\
 	pthread_mutex_unlock(&malloc_mtx)
 
+# define REDB "\e[41m"
+# define RESET "\e[0m"
+# define WHTB "\e[47m"
+# define BLK "\e[0;30m"
 
 typedef	enum			s_group
 {
@@ -142,6 +146,7 @@ void					*malloc(size_t size);
 void					*realloc(void *ptr, size_t size);
 void					*calloc(size_t count, size_t size);
 void					show_alloc_mem();
+void					show_alloc_mem_ex(void *ptr);
 size_t					mprintf(int fd, char *str, ...);
 
 
