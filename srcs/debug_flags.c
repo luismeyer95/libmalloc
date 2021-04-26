@@ -22,18 +22,13 @@ void log_malloc_call(const char *filepath, size_t size, void *alloc)
 		pthread_mutex_unlock(&malloc_mtx);
 		return;
 	}
-
 	if (recursive)
-		print_str(fd, "\t");
-	print_str(fd, ">> malloc(size=");
-	print_base(fd, (uintptr_t)size, 10);
-	print_str(fd, ") = 0x");
-	print_base(fd, (uintptr_t)alloc, 16);
-	print_str(fd, "\n");
+		mprintf(fd, "\t");
+	mprintf(fd, ">> malloc(size=%u) = %p\n", size, alloc);
 	if (!recursive)
 		log_backtrace(fd);
 	else
-		print_str(fd, "\t-- backtrace not available --\n");
+		mprintf(fd, "\t-- backtrace not available --\n");
 	ft_putchar_fd('\n', fd);
 	
 	close(fd);
@@ -51,16 +46,13 @@ void log_free_call(const char *filepath, void *alloc)
 		pthread_mutex_unlock(&malloc_mtx);
 		return;
 	}
-
 	if (recursive)
-		print_str(fd, "\t");
-	print_str(fd, ">> free(ptr=0x");
-	print_base(fd, (uintptr_t)alloc, 16);
-	print_str(fd, ")\n");
+		mprintf(fd, "\t");
+	mprintf(fd, ">> free(ptr=%p)\n", alloc);
 	if (!recursive)
 		log_backtrace(fd);
 	else
-		print_str(fd, "\t-- backtrace not available --\n");
+		mprintf(fd, "\t-- backtrace not available --\n");
 	ft_putchar_fd('\n', fd);
 
 	close(fd);

@@ -10,28 +10,6 @@ inline size_t align(size_t nb)
 	return align_on(nb, ALIGNMENT);
 }
 
-inline void print_str(int fd, char *str)
-{
-	ft_putstr_fd(str, fd);
-}
-
-inline void	print_base(int fd, uintptr_t nb, unsigned int base)
-{
-	static char basestr[17] = "0123456789abcdef";
-	if (base > 16 || base < 2)
-		return;
-	char strnb[65];
-	strnb[64] = 0;
-	char *ptr = strnb + 63;
-	for ( ; nb >= base; --ptr)
-	{
-		*ptr = basestr[nb % base];
-		nb /= base;
-	}
-	*ptr = basestr[nb];
-	ft_putstr_fd(ptr, fd);
-}
-
 void	*get_arena()
 {
 	t_ctl *ctl = malloc_ctl();

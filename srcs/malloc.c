@@ -48,7 +48,8 @@ static inline void
 		heap = create_heap(SMALL, SMALL_HEAP_SIZE);
 	else
 	{
-		size_t new_heap_size = SIZEOF_T_HEAP + SIZEOF_T_BLOCK + aligned_alloc_size;
+		size_t new_heap_size = SIZEOF_T_HEAP + SIZEOF_T_BLOCK
+		+ aligned_alloc_size;
 		new_heap_size = align_on(new_heap_size, getpagesize());
 		heap = create_heap(LARGE, new_heap_size);
 	}
@@ -80,7 +81,8 @@ static inline void
 	block->size = aligned_alloc_size;
 	if (remaining_space > SIZEOF_T_BLOCK)
 	{
-		t_block *free_block = SHIFT(block, SIZEOF_T_BLOCK + aligned_alloc_size);
+		t_block *free_block =
+		SHIFT(block, SIZEOF_T_BLOCK + aligned_alloc_size);
 		free_block->allocated = false;
 		free_block->size = remaining_space - SIZEOF_T_BLOCK;
 		insert_after_node((void*)block, (void*)free_block);

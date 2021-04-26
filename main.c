@@ -61,7 +61,9 @@ void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 		else if (roll == 1)
 		{
 			void *old = *ptr;
-			*ptr = realloc(old, size);
+			void *new = realloc(old, size);
+			if (new)
+				*ptr = new;
 			// printf(" ~ REALLOC(%p, %zu) = %p ~\n", old, size, *ptr);
 			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 		}
@@ -72,34 +74,34 @@ void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 			// printf(" ~ align(%zu) = %zu ~\n", size, align(size));
 		}
 		// show_mem_wrap();
-		show_alloc_mem();
+		// show_alloc_mem();
 	}
 	for (int i = 0; i < 4; ++i)
 		free(buf[i]);
 
-	print_test_footer();
+	// print_test_footer();
 }
 
 void test_coalesce()
 {
 	print_test_header("test_coalesce()");
 	void *p[4];
-	printf(" ~ MALLOC() 4 x 32 bytes ~\n");
+	mprintf(1, " ~ MALLOC() 4 x 32 bytes ~\n");
 	p[0] = malloc(32);
 	p[1] = malloc(32);
 	p[2] = malloc(32);
 	p[3] = malloc(32);
 	show_mem_wrap();
 
-	printf(" ~ FREE() index 0 and 2 ~\n");
+	mprintf(1, " ~ FREE() index 0 and 2 ~\n");
 	free(p[0]);
 	free(p[2]);
 	show_mem_wrap();
 
-	printf(" ~ FREE() index 1 ~\n");
+	mprintf(1, " ~ FREE() index 1 ~\n");
 	free(p[1]);
 	show_mem_wrap();
-	printf(" ~ FREE() index 1 ~\n");
+	mprintf(1, " ~ FREE() index 1 ~\n");
 	free(p[3]);
 	show_mem_wrap();
 
@@ -127,7 +129,7 @@ void test_fat_malloc()
 {
 	print_test_header("fat_malloc");
 	size_t size = (size_t)-1;
-	printf("~ MALLOC(%zu) ~\n", size);
+	mprintf(1, "~ MALLOC(%zu) ~\n", size);
 	void *ptr = malloc(size);
 	assert(!ptr);
 	assert(errno == ENOMEM);
@@ -138,12 +140,12 @@ void test_macros()
 {
 	print_test_header("test_macros()");
 
-	printf("pagesize = %d\n", getpagesize());
-	printf("alignment = %d\n", ALIGNMENT);
-	printf("t_block size = %zu\n", SIZEOF_T_BLOCK);
-	printf("t_heap size = %zu\n", SIZEOF_T_HEAP);
-	printf("tiny heap total size = %zu\n", TINY_HEAP_SIZE);
-	printf("small heap total size = %zu\n", SMALL_HEAP_SIZE);
+	mprintf(1, "pagesize = %d\n", getpagesize());
+	mprintf(1, "alignment = %d\n", ALIGNMENT);
+	mprintf(1, "t_block size = %zu\n", SIZEOF_T_BLOCK);
+	mprintf(1, "t_heap size = %zu\n", SIZEOF_T_HEAP);
+	mprintf(1, "tiny heap total size = %zu\n", TINY_HEAP_SIZE);
+	mprintf(1, "small heap total size = %zu\n", SMALL_HEAP_SIZE);
 
 	print_test_footer();
 }
@@ -190,30 +192,98 @@ void	test_pthreads(size_t nb_threads, size_t ops_each,
 
 }
 
-int main()
+void test_scribble()
 {
-	srand(time(NULL));
-	// setvbuf(stdout, NULL, _IONBF, 0);
+	print_test_header("scribble");
+
+	void *ptr = malloc(64);
+
+	ft_memset(ptr, 1, 64);
+
+	free(ptr);
 	
-	// test_macros();
-	// test_realloc();
-	// test_fat_malloc();
-	// test_coalesce();
+	int is_scribbled = 1;
+	for (int i = 0; i < 64; ++i)
+		if ( ((char*)ptr)[i] != 0x55)
+			is_scribbled = 0;
 
-	// random_ops(3000, 0, 6000);
-	// test_pthreads(600, 100, 0, 4096 * 128);
+	assert(is_scribbled);
 
-	// test_pthreads(100, 20, 0, 4096 * 128);
-	// test_pthreads(1, 1, 0, 10000);
+	print_test_footer();
+
+}
+
+void test_prescribble()
+{
+	print_test_header("prescribble");
+	
+	void *ptr = malloc(64);
+
+	int is_scribbled = 1;
+	for (int i = 0; i < 64; ++i)
+		if (((uint8_t*)ptr)[i] != 0xAA)
+			is_scribbled = 0;
+
+	assert(is_scribbled);
+
+	print_test_footer();
+}
+
+void test_show_alloc_mem_ex()
+{
+	print_test_header("show_alloc_mem_ex");
 
 	void *ptr = malloc(32);
 	strcpy(ptr, "Hello world!");
 	show_alloc_mem();
-
 	show_alloc_mem_ex(ptr);
-
 	free(ptr);
 
-	// show_alloc_mem();
+	print_test_footer();
+}
+
+void test_limits()
+{
+	print_test_header("limits");
+
+	char *t;
+    struct rlimit rpl;
+	getrlimit(RLIMIT_AS, &rpl);
+	rlim_t bkp = rpl.rlim_cur;
+    rpl.rlim_cur = 1000;
+    if (setrlimit(RLIMIT_AS, &rpl) < 0)
+		perror("setrlimit()");
+
+	t = malloc(1);
+	assert(!t);
+
+	rpl.rlim_cur = bkp;
+	 if (setrlimit(RLIMIT_AS, &rpl) < 0)
+		perror("setrlimit()");
+	print_test_footer();
+}
+
+
+
+int main()
+{
+	srand(time(NULL));
+	
+	test_macros();
+	// test_limits();
+	test_realloc();
+	test_fat_malloc();
+	test_coalesce();
+	// test_show_alloc_mem_ex();
+
+	// test_scribble();
+	// test_prescribble();
+
+	random_ops(3000, 5000, 100000);
+	test_pthreads(100, 200, 0, 4096 * 128);
+
+	// sleep(1);
+
+	show_alloc_mem();
 
 }
