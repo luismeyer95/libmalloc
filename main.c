@@ -235,8 +235,8 @@ void test_show_alloc_mem_ex()
 
 	void *ptr = malloc(32);
 	strcpy(ptr, "Hello world!");
-	show_alloc_mem();
-	show_alloc_mem_ex(ptr);
+	show_alloc_mem_ex(NULL);
+	// show_alloc_mem_ex(ptr);
 	free(ptr);
 
 	print_test_footer();
@@ -269,21 +269,21 @@ int main()
 {
 	srand(time(NULL));
 	
-	test_macros();
+	// test_macros();
 	// test_limits();
-	test_realloc();
-	test_fat_malloc();
-	test_coalesce();
-	// test_show_alloc_mem_ex();
+	// test_realloc();
+	// test_fat_malloc();
+	// test_coalesce();
+	test_show_alloc_mem_ex();
 
 	// test_scribble();
 	// test_prescribble();
 
-	random_ops(3000, 5000, 100000);
-	test_pthreads(100, 200, 0, 4096 * 128);
+	// random_ops(3000, 5000, 100000);
+	// test_pthreads(100, 200, 0, 4096 * 128);
 
 	// sleep(1);
 
-	show_alloc_mem();
+	// show_alloc_mem();
 
 }

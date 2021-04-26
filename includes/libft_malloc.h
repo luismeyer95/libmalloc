@@ -130,6 +130,8 @@ void					log_malloc_call(const char *filepath, size_t size, void *alloc);
 void					log_free_call(const char *filepath, void *alloc);
 
 void					link_nodes(t_node *n1, t_node *n2);
+void					foreach_node(t_node *lst, void (*f)(void *node));
+
 void					print_base(int fd, uintptr_t nb, unsigned int base);
 void					print_str(int fd, char *str);
 

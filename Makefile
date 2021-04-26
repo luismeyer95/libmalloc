@@ -23,6 +23,7 @@ SRCS	=	malloc.c \
 			realloc.c \
 			free.c \
 			show_alloc_mem.c \
+			show_alloc_mem_ex.c \
 			globals.c \
 			helpers.c \
 			debug_flags.c \
