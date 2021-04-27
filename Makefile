@@ -1,5 +1,12 @@
-CC			=	clang-6.0
-# CC			=	gcc
+
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Linux)
+	CC			=	clang-6.0
+endif
+ifeq ($(UNAME), Darwin)
+	CC			=	gcc
+endif
 
 FWARN		=	-Wall -Wextra -Werror
 FDEBUG		=	-g3
@@ -32,8 +39,7 @@ SRCS	=	malloc.c \
 
 INCLUDE		=	$(addprefix includes/, \
 				libft_malloc.h \
-				libft_malloc_internals.h \
-			)
+				libft_malloc_internals.h)
 
 LIBFT_DIR = libft
 LIBFT_INCLUDE = $(LIBFT_DIR)/libft.h

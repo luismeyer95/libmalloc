@@ -266,8 +266,8 @@ int main()
 	// test_scribble();
 	// test_prescribble();
 
-	test_random_ops(3000, 5000, 100000);
-	test_pthreads(300, 200, 0, 4096 * 128);
+	// test_random_ops(3000, 5000, 100000);
+	test_pthreads(3000, 200, 0, 4096 * 128);
 
 	show_alloc_mem();
 
