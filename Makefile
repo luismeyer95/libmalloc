@@ -30,8 +30,9 @@ SRCS	=	malloc.c \
 			arena.c \
 			mprintf.c
 
-INCLUDE	=	$(addprefix $(INC_DIR)/, \
+INCLUDE		=	$(addprefix includes/, \
 				libft_malloc.h \
+				libft_malloc_internals.h \
 			)
 
 LIBFT_DIR = libft
@@ -57,7 +58,7 @@ main: $(NAME)
 	rm -f /tmp/malloc.log
 	LD_LIBRARY_PATH=. ./a.out
 
-$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c includes/libft_malloc.h
+$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c $(INCLUDE)
 	$(CC) $(FLAGS) -D ALIGNMENT=$(ALIGNMENT) -c -fPIC $(addprefix -I, $(INC_DIR)) $< -o $@
 
 clean:

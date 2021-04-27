@@ -1,4 +1,4 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
 static inline void
 *create_heap(t_group heap_group, size_t heap_size)
@@ -170,16 +170,15 @@ inline void *malloc_impl(size_t size, t_arena *arena)
 
 void *malloc(size_t size)
 {
-	t_ctl *ctl = malloc_ctl();
 	try_init_state();
 
 	t_arena *locked_arena = lock_arena();
 	void *alloc = malloc_impl(size, locked_arena);
-	if (alloc && ctl->dbg_flags.PRESCRIBBLE)
+	if (alloc && getenv("MallocPreScribble"))
 		ft_memset(alloc, 0xAA, align(size));
 	unlock_arena(locked_arena);
 
-	if (ctl->dbg_flags.STACK_LOGGING)
+	if (getenv("MallocStackLogging"))
 		log_malloc_call(LOGFILE_PATH, size, alloc);
 	
 	return alloc;

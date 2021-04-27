@@ -1,4 +1,4 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
 inline bool is_valid_block(t_block *block, t_arena *arena)
 {
@@ -90,12 +90,9 @@ inline void free_impl(void *ptr, t_arena *arena)
 		return;
 	t_block *block = SHIFT(ptr, -SIZEOF_T_BLOCK);
 	if (!is_valid_block(block, arena))
-	{
-		// write(1, "tf bitch?\n", 10);
 		return;
-	}
 	block->allocated = false;
-	if (malloc_ctl()->dbg_flags.SCRIBBLE)
+	if (getenv("MallocScribble"))
 		ft_memset(ptr, 0x55, block->size);
 	try_merge(block);
 	t_heap *heap = find_heap_of_block(block, arena);
@@ -107,7 +104,7 @@ void free(void *ptr)
 {
 	try_init_state();
 
-	if (malloc_ctl()->dbg_flags.STACK_LOGGING)
+	if (getenv("MallocStackLogging"))
 		log_free_call(LOGFILE_PATH, ptr);
 
 	t_arena *arena = get_arena();

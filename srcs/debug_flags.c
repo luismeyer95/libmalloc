@@ -1,20 +1,9 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
-void fetch_debug_flags()
-{
-	t_ctl *ctl = malloc_ctl();
-	if (getenv("MallocStackLogging"))
-		ctl->dbg_flags.STACK_LOGGING = 1;
-	if (getenv("MallocScribble"))
-		ctl->dbg_flags.SCRIBBLE = 1;
-	if (getenv("MallocPreScribble"))
-		ctl->dbg_flags.PRESCRIBBLE = 1;
-}
-
+__attribute__ ((noinline)) 
 void log_malloc_call(const char *filepath, size_t size, void *alloc)
 {
 	void *recursive = get_recursive_flag();
-
 	pthread_mutex_lock(&malloc_mtx);
 	int fd = open(filepath, O_CREAT | O_WRONLY | O_APPEND, 0644);
 	if (fd == -1)
@@ -30,15 +19,14 @@ void log_malloc_call(const char *filepath, size_t size, void *alloc)
 	else
 		mprintf(fd, "\t-- backtrace not available --\n");
 	ft_putchar_fd('\n', fd);
-	
 	close(fd);
 	pthread_mutex_unlock(&malloc_mtx);
 }
 
+__attribute__ ((noinline)) 
 void log_free_call(const char *filepath, void *alloc)
 {
 	void *recursive = get_recursive_flag();
-
 	pthread_mutex_lock(&malloc_mtx);
 	int fd = open(filepath, O_CREAT | O_WRONLY | O_APPEND, 0644);
 	if (fd == -1)
@@ -54,11 +42,11 @@ void log_free_call(const char *filepath, void *alloc)
 	else
 		mprintf(fd, "\t-- backtrace not available --\n");
 	ft_putchar_fd('\n', fd);
-
 	close(fd);
 	pthread_mutex_unlock(&malloc_mtx);
 }
 
+__attribute__ ((noinline)) 
 void log_backtrace(int fd)
 {
 	void	*array[100];

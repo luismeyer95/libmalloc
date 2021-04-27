@@ -1,4 +1,4 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
 inline void try_init_state()
 {
@@ -14,7 +14,6 @@ inline void try_init_state()
 		ctl->arena_key = &arena_key;
 		ctl->recursion_key = &recursion_key;
 		init_arenas(arenas);
-		fetch_debug_flags();
 	}
 	pthread_mutex_unlock(&malloc_mtx);
 }

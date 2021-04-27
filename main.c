@@ -1,4 +1,5 @@
-#include <libft_malloc.h>
+// #include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -36,9 +37,9 @@ void show_mem_wrap()
 	ft_putstr_fd("------------------\n", 1);
 }
 
-void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
+void test_random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 {
-	// print_test_header("random_ops()");
+	// print_test_header("test_random_ops()");
 
 	void *buf[4];
 	ft_bzero(buf, 4 * sizeof(void*));
@@ -58,7 +59,7 @@ void random_ops(size_t number, size_t alloc_size_min, size_t alloc_size_max)
 			free(*ptr);
 			*ptr = 0;
 		}
-		else if (roll == 1)
+		else if (roll == 1 && *ptr)
 		{
 			void *old = *ptr;
 			void *new = realloc(old, size);
@@ -129,7 +130,7 @@ void test_fat_malloc()
 {
 	print_test_header("fat_malloc");
 	size_t size = (size_t)-1;
-	mprintf(1, "~ MALLOC(%zu) ~\n", size);
+	mprintf(1, "~ MALLOC(%u) ~\n", size);
 	void *ptr = malloc(size);
 	assert(!ptr);
 	assert(errno == ENOMEM);
@@ -152,7 +153,7 @@ void test_macros()
 
 void *test_pthreads_func(void *bytes)
 {
-	random_ops(
+	test_random_ops(
 		*(size_t*)bytes,
 		*(size_t*)SHIFT(bytes, 8),
 		*(size_t*)SHIFT(bytes, 16)
@@ -165,18 +166,10 @@ void	test_pthreads(size_t nb_threads, size_t ops_each,
 {
 	print_test_header("pthreads");
 
-	// int stdout_backup, new;
-	// fflush(stdout);
-	// stdout_backup = dup(1);
-	// new = open("/dev/null", O_WRONLY);
-	// dup2(new, 1);
-	// close(new);
-
 	uint8_t bytes[32];
 	memcpy(bytes, &ops_each, 8);
 	memcpy(bytes+8, &alloc_size_min, 8);
 	memcpy(bytes+16, &alloc_size_max, 8);
-
 
 	pthread_t *ths = alloca(nb_threads * sizeof(pthread_t));
 	for (size_t i = 0; i < nb_threads; ++i)
@@ -184,10 +177,6 @@ void	test_pthreads(size_t nb_threads, size_t ops_each,
 	for (size_t i = 0; i < nb_threads; ++i)
 		pthread_join(ths[i], NULL);
 	
-	// fflush(stdout);
-	// dup2(stdout_backup, 1);
-	// close(stdout_backup);
-
 	print_test_footer();
 
 }
@@ -195,11 +184,10 @@ void	test_pthreads(size_t nb_threads, size_t ops_each,
 void test_scribble()
 {
 	print_test_header("scribble");
+	setenv("MallocScribble", "1", 1);
 
 	void *ptr = malloc(64);
-
 	ft_memset(ptr, 1, 64);
-
 	free(ptr);
 	
 	int is_scribbled = 1;
@@ -209,6 +197,7 @@ void test_scribble()
 
 	assert(is_scribbled);
 
+	unsetenv("MallocScribble");
 	print_test_footer();
 
 }
@@ -216,7 +205,8 @@ void test_scribble()
 void test_prescribble()
 {
 	print_test_header("prescribble");
-	
+	setenv("MallocPreScribble", "1", 1);
+
 	void *ptr = malloc(64);
 
 	int is_scribbled = 1;
@@ -225,7 +215,9 @@ void test_prescribble()
 			is_scribbled = 0;
 
 	assert(is_scribbled);
+	free(ptr);
 
+	unsetenv("MallocPreScribble");
 	print_test_footer();
 }
 
@@ -235,8 +227,7 @@ void test_show_alloc_mem_ex()
 
 	void *ptr = malloc(32);
 	strcpy(ptr, "Hello world!");
-	show_alloc_mem_ex(NULL);
-	// show_alloc_mem_ex(ptr);
+	show_alloc_mem_ex();
 	free(ptr);
 
 	print_test_footer();
@@ -263,27 +254,21 @@ void test_limits()
 	print_test_footer();
 }
 
-
-
 int main()
 {
 	srand(time(NULL));
 	
-	// test_macros();
-	// test_limits();
-	// test_realloc();
-	// test_fat_malloc();
-	// test_coalesce();
+	test_macros();
+	test_realloc();
+	test_fat_malloc();
+	test_coalesce();
 	test_show_alloc_mem_ex();
-
 	// test_scribble();
 	// test_prescribble();
 
-	// random_ops(3000, 5000, 100000);
-	// test_pthreads(100, 200, 0, 4096 * 128);
+	test_random_ops(3000, 5000, 100000);
+	test_pthreads(300, 200, 0, 4096 * 128);
 
-	// sleep(1);
-
-	// show_alloc_mem();
+	show_alloc_mem();
 
 }

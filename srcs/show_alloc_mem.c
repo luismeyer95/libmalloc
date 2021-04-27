@@ -1,4 +1,4 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
 inline void foreach_node(t_node *lst, void (*f)(void *node))
 {

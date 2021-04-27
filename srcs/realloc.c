@@ -1,4 +1,4 @@
-#include <libft_malloc.h>
+#include <libft_malloc_internals.h>
 
 void *realloc_impl(void *ptr, size_t size, t_arena *arena)
 {
