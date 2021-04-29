@@ -143,10 +143,10 @@ void test_macros()
 
 	mprintf(1, "pagesize = %d\n", getpagesize());
 	mprintf(1, "alignment = %d\n", ALIGNMENT);
-	mprintf(1, "t_block size = %zu\n", SIZEOF_T_BLOCK);
-	mprintf(1, "t_heap size = %zu\n", SIZEOF_T_HEAP);
-	mprintf(1, "tiny heap total size = %zu\n", TINY_HEAP_SIZE);
-	mprintf(1, "small heap total size = %zu\n", SMALL_HEAP_SIZE);
+	mprintf(1, "t_block size = %u\n", SIZEOF_T_BLOCK);
+	mprintf(1, "t_heap size = %u\n", SIZEOF_T_HEAP);
+	mprintf(1, "tiny heap total size = %u\n", TINY_HEAP_SIZE);
+	mprintf(1, "small heap total size = %u\n", SMALL_HEAP_SIZE);
 
 	print_test_footer();
 }
@@ -263,12 +263,11 @@ int main()
 	test_fat_malloc();
 	test_coalesce();
 	test_show_alloc_mem_ex();
-	// test_scribble();
-	// test_prescribble();
+	test_scribble();
+	test_prescribble();
 
 	// test_random_ops(3000, 5000, 100000);
-	test_pthreads(3000, 200, 0, 4096 * 128);
+	//test_pthreads(300, 200, 0, 4096 * 128);
 
 	show_alloc_mem();
-
 }

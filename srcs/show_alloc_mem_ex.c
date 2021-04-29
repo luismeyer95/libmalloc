@@ -57,7 +57,7 @@ static inline void show_heap_ex(void *node)
 void show_alloc_mem_ex_impl()
 {
 	char sep[] = "=================================="
-	"=============================\n";
+	"==============================================================\n";
 	for (int i = 0; i < ARENA_COUNT; ++i)
 	{
 		if (arenas[i].initialized)

@@ -29,9 +29,21 @@ static inline void show_heap(void *node)
 	static char *gpmap[] = {"TINY", "SMALL", "LARGE"};
 	t_heap *heap = node;
 
-	mprintf(1, "%-5s : %p\n", gpmap[(int)heap->group], heap);
+	size_t total_allocated = 0;
+	t_block *b = SHIFT(heap, SIZEOF_T_HEAP);
+	while (b)
+	{
+		total_allocated += b->allocated * b->size;
+		b = b->next;
+	}
+
+	mprintf(1, "%-5s : %p - %u allocated bytes\n",
+	gpmap[(int)heap->group], heap, total_allocated);
 	mprintf(1, "|%18s | %17s | %19s |\n", "start", "end", "size");
 	t_block *block_start = SHIFT(heap, SIZEOF_T_HEAP);
+
+
+
 	foreach_node((void*)block_start, show_block);
 	mprintf(1, "\n");
 }

@@ -61,8 +61,6 @@ $(NAME): $(addprefix $(OBJS_DIR)/, $(OBJS)) $(LIBFT)
 
 main: $(NAME)
 	$(CC) $(FLAGS) -rdynamic -D ALIGNMENT=$(ALIGNMENT) $(addprefix -I, $(INC_DIR)) -lpthread main.c $(NAME)
-	rm -f /tmp/malloc.log
-	LD_LIBRARY_PATH=. ./a.out
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c $(INCLUDE)
 	$(CC) $(FLAGS) -D ALIGNMENT=$(ALIGNMENT) -c -fPIC $(addprefix -I, $(INC_DIR)) $< -o $@
