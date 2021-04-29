@@ -263,11 +263,11 @@ int main()
 	test_fat_malloc();
 	test_coalesce();
 	test_show_alloc_mem_ex();
-	test_scribble();
-	test_prescribble();
+	//test_scribble();
+	//test_prescribble();
 
 	// test_random_ops(3000, 5000, 100000);
-	//test_pthreads(300, 200, 0, 4096 * 128);
+	test_pthreads(300, 50, 0, 4096 * 128);
 
 	show_alloc_mem();
 }
